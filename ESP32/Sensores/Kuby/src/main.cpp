@@ -7,22 +7,40 @@
 
 const int DHT_PIN = 13;
 const int SENSOR_BN_PIN = 14;
+const int LED_PIN = 27;
 
 DHT dht(DHT_PIN, DHT_TYPE);
 SensorBN sensorBN(SENSOR_BN_PIN);
 
 void setup()
 {
+  analogWriteResolution(LED_PIN, 8); // 8 bits de resolución
   Serial.begin(9600);
   dht.begin();
+  pinMode(LED_PIN, OUTPUT);
 }
 
 void loop()
 {
+  if (Serial.available() > 0)
+  {
+    String numStr = Serial.readStringUntil('\n');
+    int intensity = constrain(numStr.toInt(), 0, 100);
 
-  /* Sensor BN */
+    while (Serial.available() > 0)
+      Serial.read();
+
+    Serial.print("Intensidad: ");
+    Serial.print(intensity);
+    Serial.println("%");
+
+    analogWrite(LED_PIN, map(intensity, 0, 100, 0, 255));
+  }
+
+  /* Sensor BN
   if (sensorBN.getData() == 0)
     Serial.println("Detectado");
+  */
 
   /* Temperatura
   float h = dht.readHumidity();    // Leemos la Humedad
