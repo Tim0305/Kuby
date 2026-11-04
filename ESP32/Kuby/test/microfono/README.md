@@ -2,6 +2,10 @@
 
 Hardware: ESP32-S3-CAM N16R8 (16 MB flash, 8 MB PSRAM).
 
+Esta es una prueba manual de hardware ubicada en `test/microfono/`.
+Se compila y carga con el entorno `microfono` usando `pio run`, sin un
+framework de pruebas unitarias. El entorno `esp32dev` compila solo `src/`.
+
 | INMP441 | ESP32-S3 |
 | --- | --- |
 | SCK | GPIO 42 |
@@ -41,19 +45,25 @@ Selecciona el puerto
 `/dev/cu.usbmodem...` de la placa. Si abriste el monitor despues del arranque,
 pulsa **RESET** sin mantener BOOT para volver a ver los mensajes iniciales.
 
-Abre el monitor serial a **115200 baudios**, espera el mensaje `Listo` y di:
+Abre el monitor serial a **115200 baudios**, espera el mensaje `Listo` y di
+uno de estos cinco comandos:
 
-- `Turn on the light` o `Lights on` (ID 1).
-- `Turn off the light` o `Lights off` (ID 2).
-- `Start fan` (ID 3).
-- `Stop fan` (ID 4).
+| Comando | Porcentaje | ID |
+| --- | --- | --- |
+| `Turn off the light` | 0 % | 1 |
+| `Set brightness to low` | 25 % | 2 |
+| `Set brightness to medium` | 50 % | 3 |
+| `Set brightness to high` | 75 % | 4 |
+| `Set maximum brightness` | 100 % | 5 |
 
+El porcentaje se calcula con `(idComando - 1) * 25`, se guarda en
+`porcentajeLuz` y se imprime en la consola. Estos cinco comandos reemplazan
+las 101 frases de porcentajes.
 Escucha directamente, sin palabra de activacion, y vuelve a escuchar despues de
 cada comando y de cada tiempo de espera. Prueba inicialmente cerca del microfono
 y con poco ruido. Solo reconoce las frases registradas; no transcribe voz libre.
-Los resultados y las acciones de ejemplo se imprimen por Serial. No se controlan
-luces ni ventiladores fisicos; agrega esas acciones en `alReconocerVoz()` cuando
-se definan los actuadores y sus pines.
+No se controla una luz fisica; agrega esa accion en `alReconocerVoz()` usando
+`porcentajeLuz` cuando se defina el actuador y su pin.
 
 Para cambiar las frases, edita `comandos[]` en `main.cpp` y vuelve a compilar y
 cargar. Las frases deben estar en ingles; sus fonemas se generan localmente.
