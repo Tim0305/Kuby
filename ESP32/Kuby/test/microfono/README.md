@@ -39,8 +39,9 @@ La tabla de particiones cambia; respalda datos anteriores de flash si los tienes
 
 En VS Code usa **PROJECT TASKS > microfono > General > Upload** y luego
 **Monitor**. El entorno predeterminado del proyecto es `microfono`.
-Los mensajes usan la consola ROM, la misma salida que los registros de ESP_SR,
-para evitar perder los avisos de la aplicacion en la salida Arduino HWCDC.
+Los mensajes de la aplicacion usan `Serial.print()` y `Serial.println()`.
+La comunicacion se inicializa con `Serial.begin(115200)` y usa el USB nativo
+del ESP32-S3, habilitado en `platformio.ini`.
 Selecciona el puerto
 `/dev/cu.usbmodem...` de la placa. Si abriste el monitor despues del arranque,
 pulsa **RESET** sin mantener BOOT para volver a ver los mensajes iniciales.

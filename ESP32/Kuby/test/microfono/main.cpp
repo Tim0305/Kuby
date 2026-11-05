@@ -2,7 +2,6 @@
 #include <ESP_I2S.h>
 #include <ESP_SR.h>
 #include <esp_partition.h>
-#include <esp_rom_sys.h>
 
 #if !CONFIG_IDF_TARGET_ESP32S3 || !CONFIG_MODEL_IN_FLASH
 #error "Selecciona el entorno microfono con Arduino-ESP32 3.3.12 y ESP-SR en flash."
@@ -35,7 +34,8 @@ int porcentajeLuz = 0;
 // Si falla la configuracion, mostrar el motivo y detener el programa.
 void detener(const char *mensaje)
 {
-    esp_rom_printf("ERROR: %s\n", mensaje);
+    Serial.print("ERROR: ");
+    Serial.println(mensaje);
     while (true)
     {
         delay(1000);
@@ -48,20 +48,26 @@ void alReconocerVoz(sr_event_t evento, int idComando, int idFrase)
     switch (evento)
     {
     case SR_EVENT_COMMAND:
-        esp_rom_printf("ID comando: %d | ID frase: %d\n", idComando, idFrase);
+        Serial.print("ID comando: ");
+        Serial.print(idComando);
+        Serial.print(" | ID frase: ");
+        Serial.println(idFrase);
         // Hay una frase por comando, con IDs consecutivos de 1 a 5.
         // Usar el mismo ID para mostrar el texto y calcular el porcentaje.
         if (idComando >= 1 && idComando <= NUM_COMANDOS)
         {
             int indice = idComando - 1;
-            esp_rom_printf("Comando detectado: %s\n", comandos[indice].str);
+            Serial.print("Comando detectado: ");
+            Serial.println(comandos[indice].str);
             porcentajeLuz = (idComando - 1) * 25;
-            esp_rom_printf("Porcentaje de luz: %d%%\n", porcentajeLuz);
+            Serial.print("Porcentaje de luz: ");
+            Serial.print(porcentajeLuz);
+            Serial.println("%");
             // Agregar aqui el control de la luz usando porcentajeLuz.
         }
         else
         {
-            esp_rom_printf("Comando desconocido\n");
+            Serial.println("Comando desconocido");
         }
         break;
 
@@ -77,23 +83,32 @@ void alReconocerVoz(sr_event_t evento, int idComando, int idFrase)
     // Continuar escuchando despues del comando o del tiempo de espera.
     if (!ESP_SR.setMode(SR_MODE_COMMAND))
     {
-        esp_rom_printf("ERROR: no se pudo reanudar el reconocimiento.\n");
+        Serial.println("ERROR: no se pudo reanudar el reconocimiento.");
     }
 }
 
 void setup()
 {
-    // Usar la misma consola que ESP_SR para ver los mensajes por USB.
+    Serial.begin(115200);
+    // Dar tiempo al monitor serial para conectarse despues del reinicio.
     delay(1500);
-    esp_rom_printf("\nKuby: comandos de voz en ingles sin internet\n");
-    esp_rom_printf("INMP441: SCK=%d, WS=%d, SD=%d; L/R=GND\n",
-                   I2S_SCK, I2S_WS, I2S_SD);
+    Serial.println();
+    Serial.println("Kuby: comandos de voz en ingles sin internet");
+    Serial.print("INMP441: SCK=");
+    Serial.print(I2S_SCK);
+    Serial.print(", WS=");
+    Serial.print(I2S_WS);
+    Serial.print(", SD=");
+    Serial.print(I2S_SD);
+    Serial.println("; L/R=GND");
 
     if (!psramFound())
     {
         detener("No se detecto PSRAM. Usa el entorno microfono para N16R8 (qio_opi).");
     }
-    esp_rom_printf("PSRAM: %lu bytes\n", ESP.getPsramSize());
+    Serial.print("PSRAM: ");
+    Serial.print(ESP.getPsramSize());
+    Serial.println(" bytes");
     if (esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
                                  ESP_PARTITION_SUBTYPE_ANY, "model") == nullptr)
     {
@@ -116,17 +131,18 @@ void setup()
     }
 
     ESP_SR.onEvent(alReconocerVoz);
-    esp_rom_printf("Iniciando reconocimiento de voz...\n");
+    Serial.println("Iniciando reconocimiento de voz...");
     if (!ESP_SR.begin(microfono, comandos, NUM_COMANDOS,
                       SR_CHANNELS_MONO, SR_MODE_COMMAND, "M"))
     {
         detener("No se pudo iniciar ESP_SR. Revisa PSRAM y la carga de srmodels.bin.");
     }
 
-    esp_rom_printf("Listo. Di directamente cualquiera de estas frases:\n");
+    Serial.println("Listo. Di directamente cualquiera de estas frases:");
     for (int i = 0; i < NUM_COMANDOS; i++)
     {
-        esp_rom_printf("  - %s\n", comandos[i].str);
+        Serial.print("  - ");
+        Serial.println(comandos[i].str);
     }
 }
 
