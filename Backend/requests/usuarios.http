@@ -1,0 +1,307 @@
+@host = http://localhost:3001
+
+
+############################################
+# 0. PREPARACIÓN (una sola vez)
+############################################
+
+### 0.0 Signup admin (201 la primera vez; 409 si ya existe, y ambos están bien)
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{ "nombre": "Ana", "apellido": "Admin", "matricula": "A00000001", "password": "Contrasena123" }
+
+### 0.1 Signup usuario
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{ "nombre": "Luis", "apellido": "Usuario", "matricula": "A00000002", "password": "Contrasena123" }
+
+### 0.2 Signup otro
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{ "nombre": "Pedro", "apellido": "Otro", "matricula": "A00000003", "password": "Contrasena123" }
+
+### >>> Ahora corre en phpMyAdmin:
+### UPDATE usuarios SET id_rol = (SELECT id_rol FROM roles WHERE nombre_rol = 'admin') WHERE matricula = 'A00000001';
+
+### 0.3 Login "otro" (guarda su id)
+# @name loginOtro
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000003", "password": "Contrasena123" }
+
+### 0.4 Login usuario (guarda su id)
+# @name loginUsuario
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000002", "password": "Contrasena123" }
+
+### 0.5 Login admin (guarda su id; la respuesta debe decir "rol": "admin")
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+############################################
+# A. COMO ADMIN
+############################################
+
+### A.0 Login admin
+# Esperado: 200
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+### A.1 Listar usuarios
+# Esperado: 200, sin password_hash ni foto, con "rol" y "tiene_foto"
+GET {{host}}/api/usuarios
+
+### A.2 Filtrar por estatus
+# Esperado: 200
+GET {{host}}/api/usuarios?estatus=inactivo
+
+### A.3 Filtro inválido
+# Esperado: 400
+GET {{host}}/api/usuarios?estatus=x
+
+### A.4 Ver a otro usuario
+# Esperado: 200
+GET {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+
+### A.5 Id inválido
+# Esperado: 400 "Id inválido"
+GET {{host}}/api/usuarios/abc
+
+### A.6 Usuario que no existe
+# Esperado: 404
+GET {{host}}/api/usuarios/99999
+
+### A.7 Editar nombre de otro
+# Esperado: 200 con el nombre nuevo
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "nombre": "Pedro Editado" }
+
+### A.8 Un admin NO puede cambiar la contraseña de otro
+# Esperado: 400 (el DTO no acepta ese campo)
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "password": "Hackeada12345" }
+
+### A.9 Rol que no existe
+# Esperado: 400 "El rol indicado no existe"
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "id_rol": 999 }
+
+### A.10 Desactivar a otro
+# Esperado: 200, estatus "inactivo"
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "estatus": "inactivo" }
+
+### A.11 El desactivado ya no puede entrar
+# Esperado: 401 (y tu sesión de admin sigue activa)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000003", "password": "Contrasena123" }
+
+### A.12 Reactivarlo
+# Esperado: 200, estatus "activo"
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "estatus": "activo" }
+
+### A.13 El admin no se da de baja a sí mismo
+# Esperado: 400
+DELETE {{host}}/api/usuarios/{{loginAdmin.response.body.$.id_usuario}}
+
+### A.14 Baja lógica de otro
+# Esperado: 204. En phpMyAdmin la fila sigue ahí con estatus 'inactivo'
+DELETE {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+
+### A.15 Reactivarlo de nuevo
+# Esperado: 200
+PATCH {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "estatus": "activo" }
+
+
+############################################
+# B. COMO USUARIO NORMAL
+############################################
+
+### B.0 Login usuario
+# Esperado: 200, "rol": "usuario"
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000002", "password": "Contrasena123" }
+
+### B.1 Listar usuarios
+# Esperado: 403
+GET {{host}}/api/usuarios
+
+### B.2 Ver a otro usuario
+# Esperado: 403
+GET {{host}}/api/usuarios/{{loginAdmin.response.body.$.id_usuario}}
+
+### B.3 Ver su propio perfil
+# Esperado: 200
+GET {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+
+### B.4 Editar su nombre
+# Esperado: 200
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "nombre": "Luis Editado" }
+
+### B.5 Intentar subirse el rol
+# Esperado: 400
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "id_rol": 1 }
+
+### B.6 Intentar cambiar su estatus
+# Esperado: 400
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "estatus": "activo" }
+
+### B.7 Intentar cambiar la matrícula
+# Esperado: 400
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "matricula": "A99999999" }
+
+### B.8 Cambiar contraseña sin mandar la actual
+# Esperado: 400
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "password": "OtraClave123" }
+
+### B.9 Contraseña actual incorrecta
+# Esperado: 403
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "password": "OtraClave123", "password_actual": "incorrecta" }
+
+### B.10 Cambio de contraseña correcto
+# Esperado: 200
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "password": "OtraClave123", "password_actual": "Contrasena123" }
+
+### B.11 Devolver la contraseña a la original (para poder repetir las pruebas)
+# Esperado: 200
+PATCH {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}
+Content-Type: application/json
+
+{ "password": "Contrasena123", "password_actual": "OtraClave123" }
+
+### B.12 Un usuario normal no puede dar de baja a nadie
+# Esperado: 403
+DELETE {{host}}/api/usuarios/{{loginOtro.response.body.$.id_usuario}}
+
+### B.13 Subir foto válida
+# Esperado: 204
+PUT {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+Content-Type: multipart/form-data; boundary=Limite
+
+--Limite
+Content-Disposition: form-data; name="foto"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./foto.jpg
+--Limite--
+
+### B.14 Ver su foto
+# Esperado: 200, la imagen
+GET {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+
+### B.15 Archivo que no es imagen
+# Esperado: 400 "Solo se aceptan imágenes JPG o PNG"
+PUT {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+Content-Type: multipart/form-data; boundary=Limite
+
+--Limite
+Content-Disposition: form-data; name="foto"; filename="falsa.jpg"
+Content-Type: image/jpeg
+
+< ./falsa.jpg
+--Limite--
+
+### B.16 Archivo de más de 2 MB
+# Esperado: 413
+PUT {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+Content-Type: multipart/form-data; boundary=Limite
+
+--Limite
+Content-Disposition: form-data; name="foto"; filename="grande.jpg"
+Content-Type: image/jpeg
+
+< ./grande.jpg
+--Limite--
+
+### B.17 Subir foto a otro usuario
+# Esperado: 403
+PUT {{host}}/api/usuarios/{{loginAdmin.response.body.$.id_usuario}}/foto
+Content-Type: multipart/form-data; boundary=Limite
+
+--Limite
+Content-Disposition: form-data; name="foto"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./foto.jpg
+--Limite--
+
+### B.18 Ver la foto de otro
+# Esperado: 403
+GET {{host}}/api/usuarios/{{loginAdmin.response.body.$.id_usuario}}/foto
+
+
+############################################
+# C. ADMIN REVISA Y BORRA UNA FOTO
+############################################
+
+### C.0 Login admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+### C.1 Ver la foto de otro usuario
+# Esperado: 200, la imagen
+GET {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+
+### C.2 Borrar esa foto
+# Esperado: 204
+DELETE {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+
+### C.3 Ya no hay foto
+# Esperado: 404
+GET {{host}}/api/usuarios/{{loginUsuario.response.body.$.id_usuario}}/foto
+
+### C.4 Logout
+# Esperado: 204
+POST {{host}}/api/auth/logout

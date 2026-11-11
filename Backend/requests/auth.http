@@ -1,0 +1,25 @@
+@host = http://localhost:3001
+
+### Signup
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{ "nombre": "Ana", "apellido": "Prueba", "matricula": "A00000001", "password": "Contrasena123" }
+
+### Login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+### Perfil (usa la cookie del login)
+GET {{host}}/api/auth/me
+
+### Colarse como admin: debe dar 400
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{ "nombre": "X", "apellido": "Y", "matricula": "A00000002", "password": "Contrasena123", "id_rol": 1 }
+
+### Logout
+POST {{host}}/api/auth/logout
