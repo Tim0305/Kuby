@@ -1,0 +1,108 @@
+@host = http://localhost:3001
+
+############################################
+# A. ESPACIOS (CUBÍCULOS)
+############################################
+
+### 1. Login como Admin (necesario para crear cubículos)
+# Esperado: 200
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"matricula": "A00000001", "password": "Contrasena123"}
+
+### 2. Crear un espacio (Solo Admin)
+# @name crearEspacio
+# Esperado: 201
+POST {{host}}/api/espacios
+Content-Type: application/json
+
+{"nombre_espacio":"Cubiculo Alfa","ubicacion":"Biblioteca Piso 2","capacidad":4,"estado_espacio":"activo"}
+
+###
+# Capturamos el ID del espacio recién creado para no adivinarlo
+@idEspacio = {{crearEspacio.response.body.$.id_espacio}}
+
+### 3. Listar Espacios
+# Esperado: 200 (debe salir "Cubículo Alfa" en la lista)
+GET {{host}}/api/espacios
+
+### 4. Modificar el Espacio (Como Admin)
+# Esperado: 200 (la capacidad debe cambiar a 6)
+PATCH {{host}}/api/espacios/{{idEspacio}}
+Content-Type: application/json
+
+{"capacidad": 6}
+
+### 5. Ver el estado de sensores de ese espacio
+# Esperado: 200 (como es nuevo, devolverá un arreglo vacío [] porque aún no hay lecturas)
+GET {{host}}/api/espacios/{{idEspacio}}/estado
+
+
+############################################
+# B. RESERVACIONES (USUARIO NORMAL)
+############################################
+
+### 6. Login como Usuario Normal
+# Esperado: 200
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"matricula": "A00000002", "password": "Contrasena123"}
+
+### 7. Usuario normal intenta crear un espacio
+# Esperado: 403 (Sin permisos, solo los admin pueden)
+POST {{host}}/api/espacios
+Content-Type: application/json
+
+{"nombre_espacio": "Cubículo Hacker"}
+
+### 8. Crear Reservación (Como Usuario) 
+# @name crearReservacion
+# Esperado: 201
+POST {{host}}/api/reservaciones
+Content-Type: application/json
+
+{"id_espacio":{{idEspacio}},"hora_inicio":"2026-11-11T00:00:00.000Z","hora_fin":"2026-11-12T23:59:00.000Z","proposito":"Estudio para proyecto de IoT"}
+
+###
+# Capturamos el ID de la reservación
+@idReservacion = {{crearReservacion.response.body.$.id_reservacion}}
+
+### 9. Intentar empalmar otra reservación en el mismo horario
+# Esperado: 409 ("El horario se empalma con otra reservación")
+POST {{host}}/api/reservaciones
+Content-Type: application/json
+
+{"id_espacio":{{idEspacio}},"hora_inicio":"2026-11-11T12:00:00.000Z","hora_fin":"2026-11-11T15:00:00.000Z"}
+
+### 10. Listar mis reservaciones
+# Esperado: 200 (solo debe salir la que acabo de crear)
+GET {{host}}/api/reservaciones
+
+### 11. Endpoint del Banner (Reservación Actual)
+# Esperado: 200 (trae los datos porque la fecha cubre el momento actual)
+GET {{host}}/api/reservaciones/actual
+
+### 12. Cancelar la reservación (Baja lógica)
+# Esperado: 204
+DELETE {{host}}/api/reservaciones/{{idReservacion}}
+
+### 13. Validar que el banner ya no debe mostrarse
+# Esperado: 404 ("No hay reservaciones activas")
+GET {{host}}/api/reservaciones/actual
+
+
+############################################
+# C. LIMPIEZA FINAL (ADMIN)
+############################################
+
+### 14. Login de regreso como Admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"matricula": "A00000001", "password": "Contrasena123"}
+
+### 15. Dar de baja el espacio (Baja Lógica)
+# Esperado: 204
+DELETE {{host}}/api/espacios/{{idEspacio}}

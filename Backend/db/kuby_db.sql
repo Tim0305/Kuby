@@ -394,6 +394,13 @@ ALTER TABLE `reservaciones`
   ADD CONSTRAINT `reservaciones_ibfk_2` FOREIGN KEY (`id_espacio`) REFERENCES `espacios` (`id_espacio`) ON DELETE CASCADE;
 
 --
+-- Estados para la tabla `reservaciones`
+--
+ALTER TABLE reservaciones 
+MODIFY estado_reservacion ENUM('creada', 'activa', 'finalizada', 'cancelada') DEFAULT 'creada';
+
+
+--
 -- Filtros para la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -402,10 +409,11 @@ ALTER TABLE `usuarios`
 --
 -- Inserción de datos iniciales para la tabla `roles`
 --
-
 INSERT INTO roles (nombre_rol, descripcion) VALUES
 ('admin', 'Administra usuarios, cubículos y reservaciones'),
 ('usuario', 'Usuario estándar');
+
+
 
 COMMIT;
 

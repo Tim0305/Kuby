@@ -5,6 +5,8 @@ import { authRouter } from "./routes/auth.routes.js";
 import { lecturasRouter } from "./routes/lecturas.routes.js";
 import { manejadorErrores } from "./middleware/errores.js";
 import { usuariosRouter } from "./routes/usuarios.routes.js";
+import { espaciosRouter } from "./routes/espacios.routes.js";
+import { reservacionesRouter } from "./routes/reservaciones.routes.js";
 
 
 const app = express();
@@ -13,8 +15,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
-app.use("/api/usuarios", usuariosRouter);   // <- nueva
+app.use("/api/usuarios", usuariosRouter);   
 app.use("/api", lecturasRouter);
+app.use("/api/reservaciones", reservacionesRouter); // <- Nueva ruta
+app.use("/api/espacios", espaciosRouter);
 
 app.use(manejadorErrores); // siempre al final
 
