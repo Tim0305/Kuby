@@ -12,6 +12,7 @@
   XCircleIcon,
 } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
+import { AppLayout } from "./components/app-layout"
 import {
   Badge,
   Button,
@@ -62,7 +63,8 @@ function AppAdmin() {
   ]
 
   return (
-    <main className="min-h-svh bg-muted/40 p-4 text-left sm:p-6">
+    <AppLayout admin>
+    <main id="overview" className="flex-1 bg-muted/40 p-4 text-left sm:p-6">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div>
@@ -98,7 +100,7 @@ function AppAdmin() {
         ))}
       </section>
 
-      <section className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <section id="system" className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader className="border-b">
             <CardTitle>System overview</CardTitle>
@@ -242,7 +244,7 @@ function AppAdmin() {
         </Card>
       </section>
 
-      <Card>
+      <Card id="devices">
         <CardHeader className="border-b">
           <CardTitle>Devices</CardTitle>
           <CardAction>
@@ -286,6 +288,7 @@ function AppAdmin() {
         </Table>
       </Card>
     </main>
+    </AppLayout>
   )
 }
 

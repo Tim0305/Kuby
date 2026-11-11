@@ -133,7 +133,7 @@
   --tracking-normal: 0em}
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
