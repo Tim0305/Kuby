@@ -7,9 +7,11 @@ type NavUserProps = {
   name?: string
   role?: string
   avatarUrl?: string
+  onLogout?: () => void
+  loggingOut?: boolean
 }
 
-export function NavUser({ name = "Kuby user", role = "User account", avatarUrl }: NavUserProps) {
+export function NavUser({ name = "Kuby user", role = "User account", avatarUrl, onLogout, loggingOut = false }: NavUserProps) {
   const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U"
 
   return (
@@ -39,7 +41,7 @@ export function NavUser({ name = "Kuby user", role = "User account", avatarUrl }
               <DropdownMenuItem><BellIcon />Notifications</DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive"><SignOutIcon />Log out</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={onLogout} disabled={!onLogout || loggingOut}><SignOutIcon />{loggingOut ? "Logging out..." : "Log out"}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
