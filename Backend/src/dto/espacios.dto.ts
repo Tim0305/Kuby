@@ -16,10 +16,18 @@ export const CrearEspacioDto = z.strictObject({
 });
 export type CrearEspacioDto = z.infer<typeof CrearEspacioDto>;
 
-export const ActualizarEspacioDto = CrearEspacioDto.partial().refine(
-  (d) => Object.keys(d).length > 0,
-  { message: "No hay nada que actualizar" }
-);
+export const ActualizarEspacioDto = z
+  .strictObject({
+    nombre_espacio: nombre,
+    ubicacion,
+    capacidad: z.number().int().positive(),
+    ip_nodo_esp32: ipNodo,
+    estado_espacio: z.enum(["activo", "inactivo", "mantenimiento"]),
+  })
+  .partial()
+  .refine((d) => Object.keys(d).length > 0, {
+    message: "No hay nada que actualizar",
+  });
 export type ActualizarEspacioDto = z.infer<typeof ActualizarEspacioDto>;
 
 export type EspacioPublico = {

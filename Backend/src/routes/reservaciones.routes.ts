@@ -3,7 +3,8 @@ import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import { pool } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { validarBody, validarId } from "../middleware/validar.js";
-import { CrearReservacionDto, aReservacionPublica } from "../dto/reservaciones.dto.js";
+import { CrearReservacionDto, aReservacionPublica, ActualizarReservacionDto } from "../dto/reservaciones.dto.js";
+import { actualizarEstadosVencidos, inicioVencido } from "../services/reservaciones.js";
 
 export const reservacionesRouter = Router();
 reservacionesRouter.use(requireAuth); // Todo exige sesión
@@ -72,6 +73,12 @@ reservacionesRouter.post("/", validarBody(CrearReservacionDto), async (req, res)
   const { id_usuario } = req.usuario!;
   const { id_espacio, hora_inicio, hora_fin } = req.body as CrearReservacionDto;
 
+  if (inicioVencido(hora_inicio)) {
+    res.status(400).json({ error: "La hora de inicio ya pasó" });
+    return;
+  }
+  await actualizarEstadosVencidos();  
+
   // 1. Validar que el espacio exista y esté activo
   const [espacio] = await pool.query<RowDataPacket[]>(
     "SELECT estado_espacio FROM espacios WHERE id_espacio = ?",
@@ -97,8 +104,58 @@ reservacionesRouter.post("/", validarBody(CrearReservacionDto), async (req, res)
   res.status(201).json({ id_reservacion: resultado.insertId });
 });
 
+// ---------- Modificar horario (solo si aún no se libera ni se usa) ----------
+reservacionesRouter.patch(
+  "/:id",
+  validarId,
+  validarBody(ActualizarReservacionDto),
+  async (req, res) => {
+    const id_reservacion = Number(req.params.id);
+    const { id_usuario, rol } = req.usuario!;
+    const { hora_inicio, hora_fin } = req.body as ActualizarReservacionDto;
+
+    await actualizarEstadosVencidos();
+
+    const [rows] = await pool.query<RowDataPacket[]>(
+      "SELECT id_usuario, id_espacio, estado_reservacion FROM reservaciones WHERE id_reservacion = ?",
+      [id_reservacion]
+    );
+    const rev = rows[0];
+    if (!rev) {
+      res.status(404).json({ error: "Reservación no encontrada" });
+      return;
+    }
+    if (rol !== "admin" && rev.id_usuario !== id_usuario) {
+      res.status(403).json({ error: "Sin permisos para modificar esta reservación" });
+      return;
+    }
+    if (rev.estado_reservacion !== "creada") {
+      res.status(409).json({
+        error: `No se puede modificar una reservación ${rev.estado_reservacion}`,
+      });
+      return;
+    }
+    if (inicioVencido(hora_inicio)) {
+      res.status(400).json({ error: "La hora de inicio ya pasó" });
+      return;
+    }
+    if (await hayTraslape(rev.id_espacio, hora_inicio, hora_fin, id_reservacion)) {
+      res.status(409).json({ error: "El horario se empalma con otra reservación" });
+      return;
+    }
+
+    await pool.query(
+      `UPDATE reservaciones SET fecha_hora_inicio = ?, fecha_hora_fin = ?
+       WHERE id_reservacion = ? AND estado_reservacion = 'creada'`,
+      [hora_inicio, hora_fin, id_reservacion]
+    );
+    res.json({ id_reservacion, hora_inicio, hora_fin });
+  }
+);
+
 // ---------- Cancelar reservación (Baja lógica) ----------
 reservacionesRouter.delete("/:id", validarId, async (req, res) => {
+  await actualizarEstadosVencidos();
   const id_reservacion = Number(req.params.id);
   const { id_usuario, rol } = req.usuario!;
 
@@ -119,8 +176,10 @@ reservacionesRouter.delete("/:id", validarId, async (req, res) => {
     return;
   }
 
-  if (rev.estado_reservacion === "cancelada") {
-    res.status(400).json({ error: "La reservación ya estaba cancelada" });
+    if (rev.estado_reservacion !== "creada" && rev.estado_reservacion !== "activa") {
+    res.status(409).json({
+      error: `No se puede cancelar una reservación ${rev.estado_reservacion}`,
+    });
     return;
   }
 

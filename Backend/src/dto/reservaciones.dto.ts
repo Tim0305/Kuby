@@ -39,3 +39,14 @@ export function aReservacionPublica(f: RowDataPacket): ReservacionPublica {
     creada_en: f.creada_en,
   };
 }
+
+export const ActualizarReservacionDto = z
+  .strictObject({
+    hora_inicio: z.coerce.date(),
+    hora_fin: z.coerce.date(),
+  })
+  .refine((d) => d.hora_fin > d.hora_inicio, {
+    message: "La hora de fin debe ser posterior a la hora de inicio",
+    path: ["hora_fin"],
+  });
+export type ActualizarReservacionDto = z.infer<typeof ActualizarReservacionDto>;
