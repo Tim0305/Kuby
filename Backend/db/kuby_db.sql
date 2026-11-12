@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 21-10-2026 a las 16:29:59
+-- Tiempo de generación: 12-11-2026 a las 00:44:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -60,9 +60,20 @@ CREATE TABLE `espacios` (
   `nombre_espacio` varchar(100) NOT NULL,
   `ubicacion` varchar(150) DEFAULT NULL,
   `capacidad` int(11) DEFAULT NULL,
-  `estado_espacio` varchar(30) DEFAULT 'disponible',
+  `estado_espacio` varchar(30) DEFAULT 'activo',
   `ip_nodo_esp32` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `espacios`
+--
+
+INSERT INTO `espacios` (`id_espacio`, `nombre_espacio`, `ubicacion`, `capacidad`, `estado_espacio`, `ip_nodo_esp32`) VALUES
+(1, 'Cubiculo Alfa', 'Biblioteca Piso 2', 4, 'activo', NULL),
+(2, 'Cubiculo Alfa', 'Biblioteca Piso 2', 6, 'activo', NULL),
+(3, 'Cubiculo Alfa', 'Biblioteca Piso 2', 6, 'activo', NULL),
+(4, 'Cubiculo Alfa', 'Biblioteca Piso 2', 6, 'activo', NULL),
+(5, 'Cubiculo Alfa', 'Biblioteca Piso 2', 6, 'inactivo', NULL);
 
 -- --------------------------------------------------------
 
@@ -94,6 +105,13 @@ CREATE TABLE `lecturas_humedad` (
   `id_espacio` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `lecturas_humedad`
+--
+
+INSERT INTO `lecturas_humedad` (`id_lectura_hum`, `valor_humedad`, `time_hum`, `id_espacio`) VALUES
+(1, 55.2, '2026-10-31 04:26:34', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -107,6 +125,13 @@ CREATE TABLE `lecturas_proximidad` (
   `id_espacio` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `lecturas_proximidad`
+--
+
+INSERT INTO `lecturas_proximidad` (`id_lectura_prox`, `deteccion`, `time_prox`, `id_espacio`) VALUES
+(1, 1, '2026-10-31 04:26:34', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -119,6 +144,13 @@ CREATE TABLE `lecturas_temperatura` (
   `time_temp` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_espacio` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `lecturas_temperatura`
+--
+
+INSERT INTO `lecturas_temperatura` (`id_lectura_temp`, `valor_temperatura`, `time_temp`, `id_espacio`) VALUES
+(1, 24.5, '2026-10-31 04:26:34', NULL);
 
 -- --------------------------------------------------------
 
@@ -144,11 +176,18 @@ CREATE TABLE `reservaciones` (
   `id_reservacion` int(11) NOT NULL,
   `fecha_hora_inicio` datetime NOT NULL,
   `fecha_hora_fin` datetime NOT NULL,
-  `estado_reservacion` varchar(30) DEFAULT 'creada',
+  `estado_reservacion` enum('creada','activa','finalizada','cancelada','liberada') NOT NULL DEFAULT 'creada',
   `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_usuario` int(11) DEFAULT NULL,
   `id_espacio` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `reservaciones`
+--
+
+INSERT INTO `reservaciones` (`id_reservacion`, `fecha_hora_inicio`, `fecha_hora_fin`, `estado_reservacion`, `creado_en`, `id_usuario`, `id_espacio`) VALUES
+(1, '2026-11-10 18:00:00', '2026-11-12 17:59:00', 'cancelada', '2026-11-11 22:46:26', 2, 5);
 
 -- --------------------------------------------------------
 
@@ -162,6 +201,14 @@ CREATE TABLE `roles` (
   `descripcion` text DEFAULT NULL,
   `creado_en` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `roles`
+--
+
+INSERT INTO `roles` (`id_rol`, `nombre_rol`, `descripcion`, `creado_en`) VALUES
+(1, 'admin', 'Administra usuarios, cubículos y reservaciones', '2026-11-10 03:09:16'),
+(2, 'usuario', 'Usuario estándar', '2026-11-10 03:09:16');
 
 -- --------------------------------------------------------
 
@@ -180,6 +227,15 @@ CREATE TABLE `usuarios` (
   `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_rol` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id_usuario`, `nombre`, `apellido`, `matricula`, `password_hash`, `foto`, `estatus`, `creado_en`, `id_rol`) VALUES
+(1, 'Ana', 'Admin', 'A00000001', '$2b$12$2fQuMtQY/mG1ZyvDvPAa.e4.ZfLUwsDVQT4Tf4RP.xzgSU/4J4JmK', NULL, 'activo', '2026-11-11 17:05:52', 1),
+(2, 'Luis Editado', 'Usuario', 'A00000002', '$2b$12$H9ByGO1g9ObbqYKhDwHwR.n2R9z97TDTGbdTCL3viCGUGfLQ.IV9m', NULL, 'activo', '2026-11-11 17:06:04', 2),
+(3, 'Pedro Editado', 'Otro', 'A00000003', '$2b$12$tHJtWaxfsyeKSgZWq699HedEqo5IVzbesPNXsi2a3Ok9HUaBPXuOC', NULL, 'activo', '2026-11-11 17:06:12', 2);
 
 --
 -- Índices para tablas volcadas
@@ -287,7 +343,7 @@ ALTER TABLE `credenciales_rfid`
 -- AUTO_INCREMENT de la tabla `espacios`
 --
 ALTER TABLE `espacios`
-  MODIFY `id_espacio` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_espacio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_accesos`
@@ -299,19 +355,19 @@ ALTER TABLE `historial_accesos`
 -- AUTO_INCREMENT de la tabla `lecturas_humedad`
 --
 ALTER TABLE `lecturas_humedad`
-  MODIFY `id_lectura_hum` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_lectura_hum` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `lecturas_proximidad`
 --
 ALTER TABLE `lecturas_proximidad`
-  MODIFY `id_lectura_prox` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_lectura_prox` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `lecturas_temperatura`
 --
 ALTER TABLE `lecturas_temperatura`
-  MODIFY `id_lectura_temp` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_lectura_temp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `preferencias_usuario`
@@ -323,19 +379,19 @@ ALTER TABLE `preferencias_usuario`
 -- AUTO_INCREMENT de la tabla `reservaciones`
 --
 ALTER TABLE `reservaciones`
-  MODIFY `id_reservacion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_reservacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restricciones para tablas volcadas
@@ -398,15 +454,6 @@ ALTER TABLE `reservaciones`
 --
 ALTER TABLE `usuarios`
   ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`) ON DELETE SET NULL;
-
---
--- Inserción de datos iniciales para la tabla `roles`
---
-
-INSERT INTO roles (nombre_rol, descripcion) VALUES
-('admin', 'Administra usuarios, cubículos y reservaciones'),
-('usuario', 'Usuario estándar');
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
