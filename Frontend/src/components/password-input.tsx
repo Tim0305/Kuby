@@ -1,8 +1,7 @@
 import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 import type { ComponentProps } from "react"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
+import { Button, Input } from "./ui"
 
 export function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type" | "className">) {
   const [visible, setVisible] = useState(false)

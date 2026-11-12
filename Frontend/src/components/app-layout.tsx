@@ -5,8 +5,12 @@ import { logout } from "../lib/api"
 import type { Usuario } from "../lib/api"
 import type { ComponentProps } from "react"
 import { CalendarIcon, HouseIcon, SquaresFourIcon, CpuIcon, PulseIcon } from "@phosphor-icons/react"
-import { TooltipProvider } from "./ui/tooltip"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger, useSidebar } from "./ui/sidebar"
+import {
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton,
+  SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger, TooltipProvider,
+  useSidebar,
+} from "./ui"
 
 type AccountProps = Pick<ComponentProps<typeof NavUser>, "name" | "role" | "avatarUrl" | "onLogout" | "loggingOut">
 

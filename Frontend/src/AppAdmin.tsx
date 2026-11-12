@@ -3,10 +3,9 @@ import { useEffect, useState } from "react"
 import { AppLayout } from "./components/app-layout"
 import {
   Badge, Button, Card, CardAction, CardContent, CardDescription,
-  CardHeader, CardTitle, Table, TableBody, TableCell,
+  CardHeader, CardTitle, Skeleton, Table, TableBody, TableCell,
   TableHead, TableHeader, TableRow,
 } from "./components/ui"
-import { Skeleton } from "./components/ui/skeleton"
 import { ApiError, getUsers } from "./lib/api"
 import type { Usuario } from "./lib/api"
 

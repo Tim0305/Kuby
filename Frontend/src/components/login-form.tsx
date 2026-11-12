@@ -2,10 +2,10 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { ApiError } from "../lib/api"
 import { PasswordInput } from "./password-input"
-import { Button } from "./ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "./ui/field"
-import { Input } from "./ui/input"
+import {
+  Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input,
+} from "./ui"
 
 export type AuthFormProps = { onLogin: (matricula: string, password: string) => Promise<void> }
 

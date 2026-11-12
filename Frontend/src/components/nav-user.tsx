@@ -1,7 +1,9 @@
 import { BellIcon, CaretUpIcon, GearIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar"
+import {
+  Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent,
+  DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuTrigger, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+} from "./ui"
 
 type NavUserProps = {
   name?: string
