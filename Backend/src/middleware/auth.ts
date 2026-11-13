@@ -6,6 +6,10 @@ import { pool } from "../db.js";
 
 export type SesionUsuario = { id_usuario: number; rol: string };
 
+export function esAdministrador(rol: string): boolean {
+  return rol === "admin" || rol === "superadmin";
+}
+
 declare global {
   namespace Express {
     interface Request {
@@ -55,3 +59,5 @@ export const requireRol =
     }
     next();
   };
+
+export const requireAdmin = requireRol("admin", "superadmin");

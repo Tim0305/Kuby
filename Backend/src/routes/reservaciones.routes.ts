@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import { pool } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
+import { esAdministrador, requireAuth } from "../middleware/auth.js";
 import { validarBody, validarId } from "../middleware/validar.js";
 import { CrearReservacionDto, aReservacionPublica, ActualizarReservacionDto } from "../dto/reservaciones.dto.js";
 import { actualizarEstadosVencidos, inicioVencido } from "../services/reservaciones.js";
@@ -27,8 +27,8 @@ reservacionesRouter.get("/", async (req, res) => {
   const { id_usuario, rol } = req.usuario!;
   
   // El admin ve todas; el usuario solo las suyas
-  const where = rol === "admin" ? "" : "WHERE r.id_usuario = ?";
-  const params = rol === "admin" ? [] : [id_usuario];
+  const where = esAdministrador(rol) ? "" : "WHERE r.id_usuario = ?";
+  const params = esAdministrador(rol) ? [] : [id_usuario];
 
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT r.id_reservacion, r.id_usuario, r.id_espacio, 
@@ -125,7 +125,7 @@ reservacionesRouter.patch(
       res.status(404).json({ error: "Reservación no encontrada" });
       return;
     }
-    if (rol !== "admin" && rev.id_usuario !== id_usuario) {
+    if (!esAdministrador(rol) && rev.id_usuario !== id_usuario) {
       res.status(403).json({ error: "Sin permisos para modificar esta reservación" });
       return;
     }
@@ -171,7 +171,7 @@ reservacionesRouter.delete("/:id", validarId, async (req, res) => {
   }
 
   // Solo el dueño o un admin pueden cancelarla
-  if (rol !== "admin" && rev.id_usuario !== id_usuario) {
+  if (!esAdministrador(rol) && rev.id_usuario !== id_usuario) {
     res.status(403).json({ error: "Sin permisos para cancelar esta reservación" });
     return;
   }

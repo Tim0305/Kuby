@@ -166,7 +166,12 @@ export function AppLayout({
 
   const account: AccountProps = {
     name: `${user.nombre} ${user.apellido}`,
-    role: user.rol === "admin" ? "Administrador" : "Usuario",
+    role:
+      user.rol === "superadmin"
+        ? "Superadministrador"
+        : user.rol === "admin"
+          ? "Administrador"
+          : "Usuario",
     avatarUrl: user.tiene_foto
       ? `/api/usuarios/${user.id_usuario}/foto?v=${avatarVersion}`
       : undefined,

@@ -4,11 +4,12 @@ import bcrypt from "bcryptjs";
 import multer from "multer";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "../db.js";
-import { requireAuth, requireRol } from "../middleware/auth.js";
+import { esAdministrador, requireAdmin, requireAuth } from "../middleware/auth.js";
 import { parsearBody, validarId } from "../middleware/validar.js";
 import {
   ActualizarPerfilDto,
   AdminActualizarUsuarioDto,
+  SuperadminActualizarUsuarioDto,
   SELECT_USUARIO_PUBLICO,
   aUsuarioPublico,
 } from "../dto/usuarios.dto.js";
@@ -19,7 +20,7 @@ usuariosRouter.use(requireAuth); // todo este módulo exige sesión
 // ---------- helpers ----------
 const adminOPropio: RequestHandler = (req, res, next) => {
   const { rol, id_usuario } = req.usuario!;
-  if (rol !== "admin" && id_usuario !== Number(req.params.id)) {
+  if (!esAdministrador(rol) && id_usuario !== Number(req.params.id)) {
     res.status(403).json({ error: "Sin permisos" });
     return;
   }
@@ -56,7 +57,7 @@ const subida = multer({
 });
 
 // ---------- lista (admin) ----------
-usuariosRouter.get("/", requireRol("admin"), async (req, res) => {
+usuariosRouter.get("/", requireAdmin, async (req, res) => {
   const filtro = req.query.estatus;
   if (filtro !== undefined && filtro !== "activo" && filtro !== "inactivo") {
     res.status(400).json({ error: "estatus debe ser activo o inactivo" });
@@ -85,8 +86,16 @@ usuariosRouter.patch("/:id", validarId, adminOPropio, async (req, res) => {
   const id = Number(req.params.id);
   const esPropio = req.usuario!.id_usuario === id;
 
-  if (!(await obtenerUsuario(id))) {
+  const usuarioExistente = await obtenerUsuario(id);
+  if (!usuarioExistente) {
     res.status(404).json({ error: "Usuario no encontrado" });
+    return;
+  }
+  if (
+    usuarioExistente.rol === "superadmin" &&
+    req.usuario!.rol !== "superadmin"
+  ) {
+    res.status(403).json({ error: "Solo el superadmin puede modificar esta cuenta" });
     return;
   }
 
@@ -117,20 +126,33 @@ usuariosRouter.patch("/:id", validarId, adminOPropio, async (req, res) => {
     }
   } else {
     // Admin editando a otra persona
-    const datos = parsearBody(AdminActualizarUsuarioDto, req, res);
-    if (!datos) return;
-
-    if (datos.nombre !== undefined) cambios.nombre = datos.nombre;
-    if (datos.apellido !== undefined) cambios.apellido = datos.apellido;
-    if (datos.id_rol !== undefined) cambios.id_rol = datos.id_rol;
-    if (datos.estatus !== undefined) cambios.estatus = datos.estatus;
+    const esSuperadmin = req.usuario!.rol === "superadmin";
+    if (esSuperadmin) {
+      const datos = parsearBody(SuperadminActualizarUsuarioDto, req, res);
+      if (!datos) return;
+      if (datos.nombre !== undefined) cambios.nombre = datos.nombre;
+      if (datos.apellido !== undefined) cambios.apellido = datos.apellido;
+      if (datos.id_rol !== undefined) cambios.id_rol = datos.id_rol;
+      if (datos.estatus !== undefined) cambios.estatus = datos.estatus;
+    } else {
+      const datos = parsearBody(AdminActualizarUsuarioDto, req, res);
+      if (!datos) return;
+      if (datos.nombre !== undefined) cambios.nombre = datos.nombre;
+      if (datos.apellido !== undefined) cambios.apellido = datos.apellido;
+      if (datos.estatus !== undefined) cambios.estatus = datos.estatus;
+    }
   }
 
   try {
     await aplicarCambios(id, cambios);
   } catch (err) {
-    if ((err as { code?: string }).code === "ER_NO_REFERENCED_ROW_2") {
+    const code = (err as { code?: string }).code;
+    if (code === "ER_NO_REFERENCED_ROW_2") {
       res.status(400).json({ error: "El rol indicado no existe" });
+      return;
+    }
+    if (code === "ER_SIGNAL_EXCEPTION") {
+      res.status(409).json({ error: "El cambio de rol viola las reglas del superadmin" });
       return;
     }
     throw err;
@@ -140,14 +162,19 @@ usuariosRouter.patch("/:id", validarId, adminOPropio, async (req, res) => {
 });
 
 // ---------- baja lógica (admin) ----------
-usuariosRouter.delete("/:id", requireRol("admin"), validarId, async (req, res) => {
+usuariosRouter.delete("/:id", requireAdmin, validarId, async (req, res) => {
   const id = Number(req.params.id);
   if (id === req.usuario!.id_usuario) {
     res.status(400).json({ error: "No puedes dar de baja tu propia cuenta" });
     return;
   }
-  if (!(await obtenerUsuario(id))) {
+  const usuarioExistente = await obtenerUsuario(id);
+  if (!usuarioExistente) {
     res.status(404).json({ error: "Usuario no encontrado" });
+    return;
+  }
+  if (usuarioExistente.rol === "superadmin") {
+    res.status(403).json({ error: "El superadmin no puede ser dado de baja" });
     return;
   }
   await aplicarCambios(id, { estatus: "inactivo" });

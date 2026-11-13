@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import { pool } from "../db.js";
-import { requireAuth, requireRol } from "../middleware/auth.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { validarBody, validarId } from "../middleware/validar.js";
 import {
   CrearEspacioDto,
@@ -62,7 +62,7 @@ espaciosRouter.get("/:id/estado", validarId, async (req, res) => {
 });
 
 // ---------- Crear espacio (Solo Admin) ----------
-espaciosRouter.post("/", requireRol("admin"), validarBody(CrearEspacioDto), async (req, res) => {
+espaciosRouter.post("/", requireAdmin, validarBody(CrearEspacioDto), async (req, res) => {
   const { nombre_espacio, ubicacion, capacidad, ip_nodo_esp32, estado_espacio } = req.body as CrearEspacioDto;
 
   const [resultado] = await pool.query<ResultSetHeader>(
@@ -74,7 +74,7 @@ espaciosRouter.post("/", requireRol("admin"), validarBody(CrearEspacioDto), asyn
 });
 
 // ---------- Modificar espacio (Solo Admin) ----------
-espaciosRouter.patch("/:id", requireRol("admin"), validarId, validarBody(ActualizarEspacioDto), async (req, res) => {
+espaciosRouter.patch("/:id", requireAdmin, validarId, validarBody(ActualizarEspacioDto), async (req, res) => {
   const id = Number(req.params.id);
   const datos = req.body as ActualizarEspacioDto;
 
@@ -101,7 +101,7 @@ espaciosRouter.patch("/:id", requireRol("admin"), validarId, validarBody(Actuali
 });
 
 // ---------- Baja lógica / Eliminar espacio (Solo Admin) ----------
-espaciosRouter.delete("/:id", requireRol("admin"), validarId, async (req, res) => {
+espaciosRouter.delete("/:id", requireAdmin, validarId, async (req, res) => {
   const id = Number(req.params.id);
   const [rows] = await pool.query<RowDataPacket[]>(
     "SELECT * FROM espacios WHERE id_espacio = ?",

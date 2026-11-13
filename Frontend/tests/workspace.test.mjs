@@ -45,6 +45,17 @@ function resetFixture() {
         rol: "usuario",
         creado_en: stamp,
         tiene_foto: false
+      },
+      {
+        id_usuario: 3,
+        nombre: "Alex",
+        apellido: "Super",
+        matricula: "SUPERADMIN",
+        estatus: "activo",
+        id_rol: 3,
+        rol: "superadmin",
+        creado_en: stamp,
+        tiene_foto: false
       }
     ],
     spaces: [
@@ -110,8 +121,10 @@ const api = createHttpServer(async (req, res) => {
       ? JSON.parse(raw.toString())
       : {}
     requests.push({ route, method: req.method, data, query: url.searchParams })
-    const admin = req.headers.cookie?.includes("fixture-role=admin")
-    const userId = admin ? 1 : 2
+    const role = req.headers.cookie?.match(/fixture-role=([^;]+)/)?.[1]
+    const admin = role === "admin" || role === "superadmin"
+    const superadmin = role === "superadmin"
+    const userId = superadmin ? 3 : admin ? 1 : 2
     const send = (body, status = 200) => {
       res.writeHead(status, { "Content-Type": "application/json" })
       res.end(status === 204 ? undefined : JSON.stringify(body))
@@ -132,15 +145,17 @@ const api = createHttpServer(async (req, res) => {
             accesos: fixture.accesses.length
           })
         : send({ error: "Sin permisos" }, 403)
-    if (route === "/reservaciones/actual")
-      return send(
-        fixture.reservations.find(
-          (r) =>
-            r.id_usuario === userId &&
-            ["creada", "activa"].includes(r.estado_reservacion)
-        ) ?? { mensaje: "No hay reservaciones activas" },
-        userId === 1 ? 404 : 200
+    if (route === "/reservaciones/actual") {
+      const reservation = fixture.reservations.find(
+        (r) =>
+          r.id_usuario === userId &&
+          ["creada", "activa"].includes(r.estado_reservacion)
       )
+      return send(
+        reservation ?? { mensaje: "No hay reservaciones activas" },
+        reservation ? 200 : 404
+      )
+    }
     if (route === "/reservaciones" && req.method === "GET")
       return send(
         fixture.reservations.filter((r) => admin || r.id_usuario === userId)
@@ -276,11 +291,13 @@ const api = createHttpServer(async (req, res) => {
         user.estatus = "inactivo"
         return send(null, 204)
       }
+      if (data.id_rol !== undefined && !superadmin)
+        return send({ error: "Sin permisos" }, 403)
       if (data.password_actual === "wrong")
         return send({ error: "La contraseña actual es incorrecta" }, 403)
       for (const key of ["nombre", "apellido", "estatus", "id_rol"])
         if (data[key] !== undefined) user[key] = data[key]
-      user.rol = user.id_rol === 1 ? "admin" : "usuario"
+      user.rol = user.id_rol === 1 ? "admin" : user.id_rol === 3 ? "superadmin" : "usuario"
       return send(user)
     }
     send({ error: "Servicio de prueba no disponible" }, 404)
@@ -317,7 +334,8 @@ after(async () => {
 
 async function openPage(
   admin = false,
-  viewport = { width: 1440, height: 1000 }
+  viewport = { width: 1440, height: 1000 },
+  role = admin ? "admin" : null
 ) {
   resetFixture()
   const context = await browser.newContext({
@@ -326,9 +344,9 @@ async function openPage(
     locale: "en-US",
     reducedMotion: "reduce"
   })
-  if (admin)
+  if (role)
     await context.addCookies([
-      { name: "fixture-role", value: "admin", url: origin }
+      { name: "fixture-role", value: role, url: origin }
     ])
   const page = await context.newPage()
   const errors = []
@@ -512,15 +530,14 @@ test(
       let student = accounts.getByRole("row").filter({ hasText: "Sam Student" })
       await student.getByRole("button", { name: "Editar", exact: true }).click()
       dialog = page.getByRole("dialog")
-      await dialog.getByRole("combobox", { name: "Rol", exact: true }).click()
-      await page
-        .getByRole("option", { name: "Administrador", exact: true })
-        .click()
+      await expect(
+        dialog.getByRole("combobox", { name: "Rol", exact: true })
+      ).toHaveCount(0)
       await dialog
         .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(student).toContainText("Administrador")
-      assert.equal(fixture.users[1].id_rol, 1)
+      await expect(student).toContainText("Usuario")
+      assert.equal(fixture.users[1].id_rol, 2)
       await student
         .getByRole("button", { name: "Desactivar usuario", exact: true })
         .click()
@@ -546,6 +563,37 @@ test(
         .click()
       await expect(accounts).toContainText("No hay usuarios con este estado. Prueba otro filtro.")
       assert.equal(fixture.users[1].estatus, "activo")
+      assert.deepEqual(errors, [])
+    } finally {
+      await context.close()
+    }
+  }
+)
+
+test(
+  "superadmin can assign roles while the protected account stays read-only",
+  { timeout: 60_000 },
+  async () => {
+    const { page, context, errors } = await openPage(
+      true,
+      { width: 1440, height: 1000 },
+      "superadmin"
+    )
+    try {
+      const accounts = page.locator("#users")
+      await expect(accounts.getByText("Superadministrador", { exact: true })).toBeVisible()
+      const own = accounts.getByRole("row").filter({ hasText: "Alex Super" })
+      await expect(own.getByRole("button", { name: "Editar", exact: true })).toHaveCount(0)
+      await expect(own.getByRole("button", { name: "Desactivar usuario", exact: true })).toHaveCount(0)
+
+      const student = accounts.getByRole("row").filter({ hasText: "Sam Student" })
+      await student.getByRole("button", { name: "Editar", exact: true }).click()
+      const dialog = page.getByRole("dialog")
+      await dialog.getByRole("combobox", { name: "Rol", exact: true }).click()
+      await page.getByRole("option", { name: "Administrador", exact: true }).click()
+      await dialog.getByRole("button", { name: "Guardar cambios", exact: true }).click()
+      await expect(student).toContainText("Administrador")
+      assert.equal(fixture.users[1].id_rol, 1)
       assert.deepEqual(errors, [])
     } finally {
       await context.close()

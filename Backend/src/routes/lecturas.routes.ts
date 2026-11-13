@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { pool } from "../db.js";
-import { requireAuth, requireRol } from "../middleware/auth.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { requireDispositivo } from "../middleware/dispositivo.js";
 import { parsearBody, parsearQuery } from "../middleware/validar.js";
 import {
@@ -47,7 +47,7 @@ async function contar(tabla: string): Promise<number> {
 }
 
 // ---------- Resumen (solo admin) ----------
-lecturasRouter.get("/resumen", requireAuth, requireRol("admin"), async (_req, res) => {
+lecturasRouter.get("/resumen", requireAuth, requireAdmin, async (_req, res) => {
   const [usuarios, espacios, reservaciones, accesos] = await Promise.all([
     contar("usuarios"),
     contar("espacios"),

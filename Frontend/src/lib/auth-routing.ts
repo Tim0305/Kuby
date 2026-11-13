@@ -1,7 +1,7 @@
 import type { Usuario } from "@/lib/api"
 
 export function homeFor(user: Pick<Usuario, "rol">): "/" | "/admin" {
-  return user.rol === "admin" ? "/admin" : "/"
+  return user.rol === "admin" || user.rol === "superadmin" ? "/admin" : "/"
 }
 
 export function authRedirect(pathname: string, user: Pick<Usuario, "rol"> | null): string | null {

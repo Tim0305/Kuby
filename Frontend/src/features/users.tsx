@@ -28,11 +28,13 @@ import {
 function UserEditor({
   user,
   roles,
+  canManageRoles,
   onClose,
   onChange
 }: {
   user: Usuario
   roles: { value: string; label: string }[]
+  canManageRoles: boolean
   onClose: () => void
   onChange: () => void
 }) {
@@ -49,7 +51,7 @@ function UserEditor({
           await updateUser(user.id_usuario, {
             nombre: text(values, "nombre"),
             apellido: text(values, "apellido"),
-            ...(role ? { id_rol: Number(role) } : {}),
+            ...(canManageRoles && role ? { id_rol: Number(role) } : {}),
             estatus: status as "activo" | "inactivo"
           })
         }}
@@ -76,14 +78,16 @@ function UserEditor({
             defaultValue={user.apellido}
           />
         </FormField>
-        <FormField label="Rol">
-          <Choice
-            label="Rol"
-            value={role}
-            onChange={setRole}
-            options={roles}
-          />
-        </FormField>
+        {canManageRoles && (
+          <FormField label="Rol">
+            <Choice
+              label="Rol"
+              value={role}
+              onChange={setRole}
+              options={roles}
+            />
+          </FormField>
+        )}
         <FormField label="Estado">
           <Choice
             label="Estado del usuario"
@@ -102,9 +106,11 @@ function UserEditor({
 
 export function Users({
   currentUserId,
+  superadmin,
   onChange
 }: {
   currentUserId: number
+  superadmin: boolean
   onChange: () => void
 }) {
   const [status, setStatus] = useState("")
@@ -120,7 +126,8 @@ export function Users({
     ["usuario", 2]
   ])
   for (const user of users.data ?? [])
-    if (user.rol && user.id_rol) roleIds.set(user.rol, user.id_rol)
+    if (user.rol && user.rol !== "superadmin" && user.id_rol)
+      roleIds.set(user.rol, user.id_rol)
   const roles = [...roleIds].map(([label, id]) => ({
     value: String(id),
     label:
@@ -186,7 +193,7 @@ export function Users({
                     )}
                   </TableCell>
                   <TableCell>{user.matricula}</TableCell>
-                  <TableCell>{user.rol === "admin" ? "Administrador" : user.rol === "usuario" ? "Usuario" : (user.rol ?? "Sin asignar")}</TableCell>
+                  <TableCell>{user.rol === "superadmin" ? "Superadministrador" : user.rol === "admin" ? "Administrador" : user.rol === "usuario" ? "Usuario" : (user.rol ?? "Sin asignar")}</TableCell>
                   <TableCell>
                     <Status value={user.estatus} />
                   </TableCell>
@@ -202,7 +209,7 @@ export function Users({
                         >
                           Editar mi perfil
                         </Button>
-                      ) : (
+                      ) : user.rol === "superadmin" ? null : (
                         <>
                           <Button
                             size="sm"
@@ -234,6 +241,7 @@ export function Users({
         <UserEditor
           user={editing}
           roles={roles}
+          canManageRoles={superadmin}
           onClose={() => setEditing(undefined)}
           onChange={changed}
         />

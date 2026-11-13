@@ -44,7 +44,6 @@ export const AdminActualizarUsuarioDto = z
   .strictObject({
     nombre,
     apellido: nombre,
-    id_rol: z.number().int().positive(),
     estatus: z.enum(["activo", "inactivo"]),
   })
   .partial()
@@ -52,6 +51,22 @@ export const AdminActualizarUsuarioDto = z
     message: "No hay nada que actualizar",
   });
 export type AdminActualizarUsuarioDto = z.infer<typeof AdminActualizarUsuarioDto>;
+
+// Solo el superadmin puede asignar roles.
+export const SuperadminActualizarUsuarioDto = z
+  .strictObject({
+    nombre,
+    apellido: nombre,
+    id_rol: z.number().int().positive(),
+    estatus: z.enum(["activo", "inactivo"]),
+  })
+  .partial()
+  .refine((d) => Object.keys(d).length > 0, {
+    message: "No hay nada que actualizar",
+  });
+export type SuperadminActualizarUsuarioDto = z.infer<
+  typeof SuperadminActualizarUsuarioDto
+>;
 
 // Lo que sí se devuelve al frontend: nunca password_hash ni foto
 export type UsuarioPublico = {

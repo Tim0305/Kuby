@@ -40,7 +40,7 @@ export function Profile({
     <Section
       id="profile"
       title="Mi perfil"
-      description={`${user.matricula} · ${user.rol === "admin" ? "Administrador" : "Usuario"}`}
+      description={`${user.matricula} · ${user.rol === "superadmin" ? "Superadministrador" : user.rol === "admin" ? "Administrador" : "Usuario"}`}
     >
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card>

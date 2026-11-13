@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { pool } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
+import { esAdministrador, requireAuth } from "../middleware/auth.js";
 import { requireDispositivo } from "../middleware/dispositivo.js";
 import { validarBody } from "../middleware/validar.js";
 import {
@@ -171,7 +171,7 @@ accesosRouter.get("/", requireAuth, async (req, res) => {
   const condiciones: string[] = [];
   const params: (string | number | Date)[] = [];
 
-  if (rol !== "admin") {
+  if (!esAdministrador(rol)) {
     condiciones.push("h.id_usuario = ?");
     params.push(id_usuario);
   } else if (q.id_usuario) {

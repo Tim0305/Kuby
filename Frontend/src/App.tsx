@@ -54,7 +54,8 @@ export default function App({ user: initialUser }: { user: Usuario }) {
   const [user, setUser] = useState(initialUser)
   const [profileVersion, setProfileVersion] = useState(0)
   const [notice, setNotice] = useState("")
-  const admin = user.rol === "admin"
+  const admin = user.rol === "admin" || user.rol === "superadmin"
+  const superadmin = user.rol === "superadmin"
   const spaces = useRemote(getSpaces)
   const reservations = useRemote(getReservations, 60_000)
   const current = useRemote(getCurrentReservation, 60_000)
@@ -167,6 +168,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
           {admin && (
             <Users
               currentUserId={user.id_usuario}
+              superadmin={superadmin}
               onChange={() => {
                 summary.reload()
                 setNotice("Usuario actualizado.")
