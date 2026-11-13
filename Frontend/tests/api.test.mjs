@@ -123,10 +123,10 @@ test("photo uploads use multipart foto and successful delete responses need no J
 
 test("booking rejects invalid, reversed, and past times while allowing the backend's one-minute clock margin", () => {
   const now = Date.parse("2030-01-01T12:00:00Z")
-  assert.throws(() => booking.bookingTimes("", "", now), /inicio y una hora de fin válidas/)
+  assert.throws(() => booking.bookingTimes("", "", now), /fechas y horas válidas/)
   assert.throws(
     () => booking.bookingTimes("2030-01-01T13:00Z", "2030-01-01T12:00Z", now),
-    /posterior a la hora de inicio/
+    /posterior al inicio/
   )
   assert.throws(
     () => booking.bookingTimes("2030-01-01T11:58Z", "2030-01-01T13:00Z", now),
@@ -159,7 +159,7 @@ test("photos enforce format and size before upload", () => {
   assert.throws(
     () =>
       booking.validatePhoto(new File([], "empty.png", { type: "image/png" })),
-    /elige una foto/
+    /Elige una foto/
   )
   assert.throws(
     () =>
@@ -210,16 +210,16 @@ test("English validator details become Spanish without changing API field keys",
 
 test("network, HTTP fallback, and malformed response errors are Spanish", async () => {
   globalThis.fetch = async () => { throw new TypeError("Failed to fetch") }
-  await assert.rejects(api.getSpaces(), { status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." })
+  await assert.rejects(api.getSpaces(), { status: 0, message: "No hay conexión con Kuby. Inténtalo de nuevo." })
   for (const [status, message] of [
-    [401, "Tu sesión no está disponible o ha expirado. Inicia sesión de nuevo."],
+    [401, "Inicia sesión de nuevo para continuar."],
     [403, "No tienes permiso para realizar esta acción."],
-    [404, "El servicio solicitado no está disponible."],
-    [500, "No se pudo completar la solicitud. Inténtalo de nuevo."]
+    [404, "No se encontró lo que buscas."],
+    [500, "No se pudo completar la acción. Inténtalo de nuevo."]
   ]) {
     respond({}, status)
     await assert.rejects(api.login("A00002", "password"), { status, message })
   }
   globalThis.fetch = async () => new Response("invalid JSON", { status: 200 })
-  await assert.rejects(api.getSpaces(), { message: "El servidor devolvió una respuesta inválida." })
+  await assert.rejects(api.getSpaces(), { message: "No se pudieron cargar los datos. Inténtalo de nuevo." })
 })

@@ -24,8 +24,8 @@ type NavUserProps = {
 }
 
 export function NavUser({
-  name = "Usuario de Kuby",
-  role = "Cuenta de usuario",
+  name = "Usuario",
+  role = "Usuario",
   avatarUrl,
   onLogout,
   loggingOut = false

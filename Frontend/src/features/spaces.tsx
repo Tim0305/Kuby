@@ -39,7 +39,7 @@ function SpaceEditor({
   return (
     <Modal
       title={space ? "Editar cubículo" : "Nuevo cubículo"}
-      description="Define la ubicación, la capacidad y el estado operativo."
+      description="Completa los datos del cubículo."
       onClose={onClose}
     >
       <ActionForm
@@ -78,9 +78,9 @@ function SpaceEditor({
           />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Capacidad">
+          <FormField label="Capacidad (personas)">
             <Input
-              aria-label="Capacidad"
+              aria-label="Capacidad (personas)"
               name="capacity"
               type="number"
               min={1}
@@ -131,8 +131,8 @@ export function Spaces({
   return (
     <Section
       id="spaces"
-      title={admin ? "Cubículos" : "Explorar cubículos"}
-      description="Encuentra un espacio para concentrarte o para tu próxima sesión en equipo."
+      title={admin ? "Cubículos" : "Cubículos"}
+      description=""
       action={
         admin && (
           <Button onClick={() => setEditor("new")} className="w-full md:w-auto">
@@ -146,7 +146,7 @@ export function Spaces({
       {resource.data?.length === 0 && (
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            Aún no se han agregado cubículos.
+            Aún no hay cubículos.
           </CardContent>
         </Card>
       )}
@@ -165,11 +165,11 @@ export function Spaces({
             <CardContent className="flex flex-1 flex-col justify-between gap-6">
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <p className="flex items-start gap-2">
-                  <MapPinIcon className="mt-px size-[18px] shrink-0" />
-                  {space.ubicacion || "Ubicación no especificada"}
+                  <MapPinIcon className="mt-px size-4.5 shrink-0" />
+                  {space.ubicacion || "Sin ubicación registrada"}
                 </p>
                 <p className="flex items-center gap-2">
-                  <UsersIcon className="mt-px size-[18px] shrink-0" />
+                  <UsersIcon className="mt-px size-4.5 shrink-0" />
                   Hasta {space.capacidad} {space.capacidad === 1 ? "persona" : "personas"}
                 </p>
               </div>
@@ -191,7 +191,7 @@ export function Spaces({
                     {space.estado_espacio !== "inactivo" && (
                       <ConfirmAction
                         label="Desactivar"
-                        description={`¿Quieres desactivar ${space.nombre_espacio}? Se bloquearán las nuevas reservaciones. Las reservaciones existentes permanecerán en el historial.`}
+                        description={`${space.nombre_espacio} dejará de aceptar reservaciones nuevas. Las existentes se conservarán.`}
                         action={() => deactivateSpace(space.id_espacio)}
                         onDone={onChange}
                       />

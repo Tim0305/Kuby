@@ -32,8 +32,8 @@ const denialReasons: Record<string, string> = {
   credencial_inactiva: "Credencial inactiva",
   usuario_inactivo: "Usuario inactivo",
   espacio_no_disponible: "Cubículo no disponible",
-  reservacion_liberada: "Reservación liberada por no registrar la entrada",
-  sin_reservacion_vigente: "No hay una reservación vigente"
+  reservacion_liberada: "Reservación liberada por falta de entrada",
+  sin_reservacion_vigente: "Sin reservación vigente"
 }
 
 export function AccessHistory({
@@ -60,8 +60,8 @@ export function AccessHistory({
       title="Historial de accesos"
       description={
         admin
-          ? "Intentos de acceso en todo el sistema, incluidas las credenciales desconocidas."
-          : "Tus intentos de acceso a los cubículos y sus resultados."
+          ? "Incluye intentos con credenciales desconocidas."
+          : ""
       }
       action={<RefreshButton {...history} />}
     >
@@ -74,7 +74,7 @@ export function AccessHistory({
                 until = text(values, "until")
               if (from && until && new Date(until) < new Date(from))
                 throw new Error(
-                  "El fin del intervalo debe ser posterior al inicio."
+                  "Elige una fecha final posterior a la inicial."
                 )
               setFilters({
                 pagina: 1,
@@ -170,7 +170,7 @@ export function AccessHistory({
                     colSpan={admin ? 6 : 5}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    No hay intentos de acceso que coincidan con estos filtros.
+                    No hay intentos con estos filtros. Prueba otros.
                   </TableCell>
                 </TableRow>
               )}

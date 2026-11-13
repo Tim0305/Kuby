@@ -19,10 +19,10 @@ import { ActionForm, ConfirmAction, FormField, Section, text } from "@/features/
 // Keep the native file picker while giving its visible controls Spanish text.
 function PhotoInput({ fileName, ...props }: ComponentProps<typeof Input> & { fileName: string }) {
   return (
-    <div className="min-h-11 rounded-(--control-radius) text-[13px] relative flex h-10 min-w-0 items-center gap-2 border border-input bg-background px-2.5 text-[13px] focus-within:outline-2 focus-within:outline-ring">
+    <div className="relative flex h-10 min-h-11 min-w-0 items-center gap-2 rounded-(--control-radius) border border-input bg-background px-2.5 text-[13px] focus-within:outline-2 focus-within:outline-ring">
       <Input {...props} type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
       <span aria-hidden="true" className="shrink-0 bg-muted px-2 py-1 font-medium">Seleccionar archivo</span>
-      <span aria-hidden="true" className="min-w-0 truncate text-muted-foreground">{fileName || "Ningún archivo seleccionado"}</span>
+      <span aria-hidden="true" className="min-w-0 truncate text-muted-foreground">{fileName || "Sin archivo"}</span>
     </div>
   )
 }
@@ -40,7 +40,7 @@ export function Profile({
     <Section
       id="profile"
       title="Mi perfil"
-      description={`${user.matricula} · ${user.rol === "admin" ? "Administrador" : "Cuenta de usuario"}`}
+      description={`${user.matricula} · ${user.rol === "admin" ? "Administrador" : "Usuario"}`}
     >
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card>
@@ -57,7 +57,7 @@ export function Profile({
                   })
                 )
               }}
-              success="Tu perfil se actualizó correctamente."
+              success="Perfil actualizado."
             >
               <FormField label="Nombre">
                 <Input
@@ -88,7 +88,7 @@ export function Profile({
             <ActionForm
               submit="Actualizar contraseña"
               resetOnSuccess
-              success="Tu contraseña se actualizó correctamente."
+              success="Contraseña actualizada."
               action={async (values) => {
                 const password = String(values.get("password") ?? "")
                 if (password !== values.get("confirm"))
@@ -108,7 +108,7 @@ export function Profile({
                   maxLength={72}
                 />
               </FormField>
-              <FormField label="Nueva contraseña" hint="Usa de 8 a 72 caracteres.">
+              <FormField label="Nueva contraseña" hint="De 8 a 72 caracteres.">
                 <PasswordInput
                   aria-label="Nueva contraseña"
                   name="password"
@@ -151,11 +151,11 @@ export function Profile({
             <ActionForm
               submit="Subir foto"
               resetOnSuccess
-              success="Tu foto se actualizó correctamente."
+              success="Foto actualizada."
               action={async (values) => {
                 const file = values.get("foto")
                 if (!(file instanceof File))
-                  throw new Error("Primero elige una foto.")
+                  throw new Error("Elige una foto.")
                 validatePhoto(file)
                 await uploadPhoto(user.id_usuario, file)
                 setPhotoName("")
@@ -177,7 +177,7 @@ export function Profile({
             {user.tiene_foto && (
               <ConfirmAction
                 label="Eliminar foto"
-                description="¿Quieres eliminar tu foto de perfil? Se mostrarán tus iniciales."
+                description="Se eliminará tu foto de perfil y se mostrarán tus iniciales."
                 action={async () => {
                   await deletePhoto(user.id_usuario)
                   onUserChange({ ...user, tiene_foto: false })

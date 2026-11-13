@@ -107,7 +107,7 @@ const statusNames: Record<string, string> = {
   creada: "Próxima",
   activa: "En uso",
   finalizada: "Finalizada",
-  liberada: "Liberada (sin registro de entrada)",
+  liberada: "Liberada (sin entrada)",
   cancelada: "Cancelada",
   activo: "Activo",
   inactivo: "Inactivo",
@@ -119,7 +119,7 @@ export function Status({ value }: { value: string }) {
   return (
     <Badge
       data-status={value}
-      className="before:size-[5px] before:shrink-0 before:rounded-full before:bg-current before:content-['']"
+      className="before:size-1.25 before:shrink-0 before:rounded-full before:bg-current before:content-['']"
       variant={
         ["activo", "activa", "permitido"].includes(value) ? "positive"
           : value === "creada" ? "upcoming"

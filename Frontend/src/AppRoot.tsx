@@ -114,7 +114,7 @@ export default function AppRoot() {
             role="status"
             className="py-8 text-center text-sm text-muted-foreground"
           >
-            Cargando tu espacio de trabajo…
+            Cargando Kuby…
           </p>
         </AuthShell>
       }

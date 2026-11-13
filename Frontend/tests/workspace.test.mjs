@@ -336,7 +336,7 @@ async function openPage(
   await page.goto(origin + (admin ? "admin" : ""))
   await expect(
     page.getByRole("heading", {
-      name: admin ? "Un espacio para cada idea." : "Hola, Sam."
+      name: admin ? "Resumen del campus" : "Hola, Sam."
     })
   ).toBeVisible()
   return { page, context, errors }
@@ -365,10 +365,10 @@ test(
         .click()
       const dialog = page.getByRole("dialog")
       await dialog
-        .getByLabel("Hora de inicio", { exact: true })
+        .getByLabel("Fecha y hora de inicio", { exact: true })
         .fill("2035-11-16T10:00")
       await dialog
-        .getByLabel("Hora de fin", { exact: true })
+        .getByLabel("Fecha y hora de fin", { exact: true })
         .fill("2035-11-16T11:00")
       fixture.conflict = true
       await dialog
@@ -376,7 +376,7 @@ test(
         .click()
       await expect(dialog.getByRole("alert")).toContainText("empalma")
       await expect(
-        dialog.getByLabel("Hora de inicio", { exact: true })
+        dialog.getByLabel("Fecha y hora de inicio", { exact: true })
       ).toHaveValue("2035-11-16T10:00")
       fixture.conflict = false
       await dialog
@@ -417,14 +417,14 @@ test(
         .click()
       let dialog = page.getByRole("dialog")
       await dialog
-        .getByLabel("Hora de fin", { exact: true })
+        .getByLabel("Fecha y hora de fin", { exact: true })
         .fill("2035-11-15T09:00")
       await dialog
         .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(dialog.getByRole("alert")).toContainText("posterior a la hora de inicio")
+      await expect(dialog.getByRole("alert")).toContainText("posterior al inicio")
       await dialog
-        .getByLabel("Hora de fin", { exact: true })
+        .getByLabel("Fecha y hora de fin", { exact: true })
         .fill("2035-11-15T12:00")
       await dialog
         .getByRole("button", { name: "Guardar cambios", exact: true })
@@ -466,11 +466,11 @@ test(
         .click()
       let dialog = page.getByRole("dialog")
       await dialog.getByLabel("Nombre", { exact: true }).fill("Team nook")
-      await dialog.getByLabel("Capacidad", { exact: true }).fill("0")
+      await dialog.getByLabel("Capacidad (personas)", { exact: true }).fill("0")
       await dialog.getByRole("button", { name: "Crear cubículo", exact: true }).click()
-      assert.equal(await dialog.getByLabel("Capacidad", { exact: true }).evaluate(input => input.validationMessage), "El valor mínimo es 1.")
+      assert.equal(await dialog.getByLabel("Capacidad (personas)", { exact: true }).evaluate(input => input.validationMessage), "El valor mínimo es 1.")
       assert.equal(requests.filter(r => r.route === "/espacios" && r.method === "POST").length, 0)
-      await dialog.getByLabel("Capacidad", { exact: true }).fill("6")
+      await dialog.getByLabel("Capacidad (personas)", { exact: true }).fill("6")
       await dialog
         .getByRole("button", { name: "Crear cubículo", exact: true })
         .click()
@@ -544,7 +544,7 @@ test(
       await dialog
         .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(accounts).toContainText("No hay usuarios que coincidan con este filtro.")
+      await expect(accounts).toContainText("No hay usuarios con este estado. Prueba otro filtro.")
       assert.equal(fixture.users[1].estatus, "activo")
       assert.deepEqual(errors, [])
     } finally {
@@ -568,7 +568,7 @@ test(
       const conditions = page.locator("#sensors")
       await expect(conditions).toContainText("24.5 °C")
       await page
-        .getByRole("button", { name: "Alternar barra lateral", exact: true })
+        .getByRole("button", { name: "Mostrar u ocultar menú", exact: true })
         .click()
       const navigation = page.getByRole("dialog")
       await expect(navigation).toBeVisible()
@@ -587,7 +587,7 @@ test(
         .getByRole("option", { name: "Library Two", exact: true })
         .click()
       await expect(conditions).toContainText(
-        "Aún no hay lecturas de temperatura para este cubículo."
+        "Sin lecturas de temperatura en este cubículo."
       )
       await page
         .getByRole("combobox", {
@@ -612,7 +612,7 @@ test(
         .getByRole("button", { name: "Aplicar filtros", exact: true })
         .click()
       await expect(history.locator("tbody tr")).toHaveCount(1)
-      await expect(history).toContainText("No hay una reservación vigente")
+      await expect(history).toContainText("Sin reservación vigente")
       await history
         .getByRole("combobox", { name: "Filtrar accesos por resultado", exact: true })
         .click()
@@ -682,7 +682,7 @@ test(
       await expect(profile.getByRole("alert").last()).toHaveText("Contraseña actual: El valor ingresado no es válido.")
       await page.unroute("**/api/usuarios/2")
       await expect(profile.getByText("Seleccionar archivo", { exact: true })).toBeVisible()
-      await expect(profile.getByText("Ningún archivo seleccionado", { exact: true })).toBeVisible()
+      await expect(profile.getByText("Sin archivo", { exact: true })).toBeVisible()
       const upload = profile.getByLabel("Elegir foto", { exact: true })
       await upload.setInputFiles({
         name: "photo.gif",
@@ -717,7 +717,7 @@ test(
       await expect(
         profile.getByRole("button", { name: "Eliminar foto", exact: true })
       ).toHaveCount(0)
-      await expect(profile.getByText("Ningún archivo seleccionado", { exact: true })).toBeVisible()
+      await expect(profile.getByText("Sin archivo", { exact: true })).toBeVisible()
       await page.setViewportSize({ width: 390, height: 844 })
       await profile.screenshot({ path: screenshotDirectory + "profile-mobile.png" })
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
@@ -768,7 +768,7 @@ test("authentication stays Spanish in an English browser, including validation a
   })
   try {
     await page.goto(origin + "login")
-    await expect(page.getByRole("heading", { name: "Te damos la bienvenida" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Inicia sesión" })).toBeVisible()
     await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
     const matricula = page.getByLabel("Matrícula", { exact: true })
     assert.equal(await matricula.evaluate(input => input.validationMessage), "Completa este campo.")
@@ -800,7 +800,7 @@ test("authentication stays Spanish in an English browser, including validation a
     await page.screenshot({ path: screenshotDirectory + "signup-mobile.png" })
     await page.getByLabel("Confirmar contraseña", { exact: true }).fill("Password123")
     await page.getByRole("button", { name: "Crear cuenta", exact: true }).click()
-    await expect(page.getByRole("status")).toHaveText("Tu cuenta se creó correctamente. Inicia sesión para continuar.")
+    await expect(page.getByRole("status")).toHaveText("Cuenta creada. Inicia sesión para continuar.")
     await expect(page.getByRole("button", { name: "Iniciar sesión", exact: true })).toBeEnabled()
     await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Hola, Sam." })).toBeVisible()
@@ -869,7 +869,7 @@ test('dashboard responsive audit keeps navigation and content usable at every br
       }
       await page.goto(origin + (admin ? "admin" : ""))
       await page.reload()
-      await expect(page.getByRole("heading", { name: admin ? "Un espacio para cada idea." : "Hola, Sam." })).toBeVisible()
+      await expect(page.getByRole("heading", { name: admin ? "Resumen del campus" : "Hola, Sam." })).toBeVisible()
       await page.keyboard.press("Tab")
       await expect(page.getByRole("link", { name: "Ir al contenido", exact: true })).toBeFocused()
       await page.keyboard.press("Enter")

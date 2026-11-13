@@ -41,7 +41,7 @@ function UserEditor({
   return (
     <Modal
       title="Editar usuario"
-      description={`${user.matricula} · Solo el titular de la cuenta puede cambiar su contraseña.`}
+      description={`${user.matricula} · La contraseña solo puede cambiarla su titular.`}
       onClose={onClose}
     >
       <ActionForm
@@ -135,7 +135,7 @@ export function Users({
     <Section
       id="users"
       title="Usuarios"
-      description="Administra los accesos y los roles de las cuentas."
+      description="Gestiona roles y estados de cuenta."
       action={
         <div className="w-full md:w-44">
           <Choice
@@ -171,7 +171,7 @@ export function Users({
                     colSpan={5}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    No hay usuarios que coincidan con este filtro.
+                    No hay usuarios con este estado. Prueba otro filtro.
                   </TableCell>
                 </TableRow>
               )}
@@ -215,7 +215,7 @@ export function Users({
                             <ConfirmAction
                               size="sm"
                               label="Desactivar usuario"
-                              description={`¿Quieres desactivar a ${user.nombre} ${user.apellido}? Perderá el acceso y se cerrará su sesión actual.`}
+                              description={`${user.nombre} ${user.apellido} perderá el acceso y se cerrará su sesión.`}
                               action={() => deactivateUser(user.id_usuario)}
                               onDone={changed}
                             />

@@ -78,21 +78,21 @@ export default function App({ user: initialUser }: { user: Usuario }) {
         id="overview"
         className="px-5 pt-7 pb-12 text-left md:px-[clamp(20px,3vw,48px)] md:pt-9 md:pb-16 max-[359px]:px-4 min-w-0 flex-1"
       >
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 md:gap-9">
+        <div className="mx-auto flex max-w-360 flex-col gap-8 md:gap-9">
           <header className="flex flex-wrap items-center justify-between gap-5 md:gap-6">
             <div>
               <p className="mb-2 flex items-center gap-2 text-[13px] font-medium text-muted-foreground before:size-1.5 before:rounded-full before:bg-primary before:content-['']">
-                {admin ? "Kuby / Administración" : "Tu espacio de trabajo en el campus"}
+                {admin ? "Kuby / Administración" : "Kuby / Cubículos del campus"}
               </p>
               <h1 className="max-w-[18ch] text-[32px]/[1.15] font-medium tracking-[-0.045em] text-balance md:max-w-none md:text-[clamp(30px,2.75vw,42px)] max-[359px]:text-[29px]">
                 {admin
-                  ? "Un espacio para cada idea."
+                  ? "Resumen del campus"
                   : "Hola, " + user.nombre + "."}
               </h1>
               <p className="mt-2.5 max-w-[62ch] text-sm/[1.6] text-muted-foreground md:mt-3 md:text-[15px]">
                 {admin
-                  ? "Administra los espacios, las personas y sus visitas."
-                  : "Concéntrate en lo que importa. Reserva un cubículo para tu próxima sesión."}
+                  ? "Gestiona cubículos, reservaciones y usuarios."
+                  : "Elige un cubículo y reserva tu horario."}
               </p>
             </div>
             <Button
@@ -101,7 +101,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               variant="outline"
               className="w-full md:w-auto"
             >
-              {admin ? "Ver reservaciones" : "Explorar cubículos"}
+              {admin ? "Ver reservaciones" : "Ver cubículos"}
               <ArrowUpRightIcon data-icon="inline-end" />
             </Button>
           </header>
@@ -124,11 +124,11 @@ export default function App({ user: initialUser }: { user: Usuario }) {
                   {Object.entries(summary.data).map(([key, value], index) => {
                     const Icon = summaryIcons[key as keyof typeof summaryIcons]
                     return (
-                      <Card key={key} className={`gap-2.5 rounded-none border-0 bg-transparent py-[18px] [--card-spacing:16px] md:py-5 md:[--card-spacing:24px] ${index > 1 ? "border-t lg:border-t-0" : ""} ${index % 2 === 1 ? "border-l" : ""} ${index === 2 ? "lg:border-l" : ""}`}>
+                      <Card key={key} className={`gap-2.5 rounded-none border-0 bg-transparent py-4.5 [--card-spacing:16px] md:py-5 md:[--card-spacing:24px] ${index > 1 ? "border-t lg:border-t-0" : ""} ${index % 2 === 1 ? "border-l" : ""} ${index === 2 ? "lg:border-l" : ""}`}>
                         <CardHeader>
                           <CardTitle className="flex items-center justify-between gap-3 text-[13px] text-muted-foreground">
                             {summaryLabels[key]}
-                            {Icon && <Icon aria-hidden="true" className="hidden size-[18px] text-muted-foreground md:block" />}
+                            {Icon && <Icon aria-hidden="true" className="hidden size-4.5 text-muted-foreground md:block" />}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -150,7 +150,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
             onBooked={() => {
               reservationsChanged()
               setNotice(
-                "Reservación confirmada. Registra tu entrada durante los primeros 10 minutos después de la hora de inicio."
+                "Reservación confirmada. Registra tu entrada en los primeros 10 minutos de tu horario."
               )
             }}
             onChange={() => {
@@ -169,7 +169,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               currentUserId={user.id_usuario}
               onChange={() => {
                 summary.reload()
-                setNotice("Cuenta de usuario actualizada.")
+                setNotice("Usuario actualizado.")
               }}
             />
           )}

@@ -80,7 +80,7 @@ async function request<T = unknown>(
     if (options.signal?.aborted) throw error
     throw new ApiError(
       0,
-      "No se pudo conectar con el servidor. Inténtalo de nuevo."
+      "No hay conexión con Kuby. Inténtalo de nuevo."
     )
   }
 
@@ -89,9 +89,9 @@ async function request<T = unknown>(
   const body: unknown = await response.json().catch(() => null)
   if (!response.ok) {
     const defaults: Record<number, string> = {
-      401: "Tu sesión no está disponible o ha expirado. Inicia sesión de nuevo.",
+      401: "Inicia sesión de nuevo para continuar.",
       403: "No tienes permiso para realizar esta acción.",
-      404: "El servicio solicitado no está disponible."
+      404: "No se encontró lo que buscas."
     }
     const message =
       body &&
@@ -100,7 +100,7 @@ async function request<T = unknown>(
       typeof body.error === "string"
         ? body.error
         : (defaults[response.status] ??
-          "No se pudo completar la solicitud. Inténtalo de nuevo.")
+          "No se pudo completar la acción. Inténtalo de nuevo.")
     const fields: Record<string, string> = {}
     if (
       body &&
@@ -124,7 +124,7 @@ async function request<T = unknown>(
     throw new ApiError(response.status, message, fields)
   }
   if (body === null)
-    throw new ApiError(response.status, "El servidor devolvió una respuesta inválida.")
+    throw new ApiError(response.status, "No se pudieron cargar los datos. Inténtalo de nuevo.")
   return body as T
 }
 
@@ -155,7 +155,7 @@ function isUsuario(value: unknown): value is Usuario {
 export async function getCurrentUser(signal?: AbortSignal): Promise<Usuario> {
   const user = await request("/auth/me", { signal })
   if (!isUsuario(user))
-    throw new ApiError(200, "El servidor devolvió un perfil de usuario inválido.")
+    throw new ApiError(200, "No se pudo cargar tu perfil. Inténtalo de nuevo.")
   return user
 }
 
@@ -165,7 +165,7 @@ export async function getUsers(
 ): Promise<Usuario[]> {
   const users = await request(`/usuarios${query({ estatus })}`, { signal })
   if (!Array.isArray(users) || !users.every(isUsuario)) {
-    throw new ApiError(200, "El servidor devolvió una lista de usuarios inválida.")
+    throw new ApiError(200, "No se pudieron cargar los usuarios. Inténtalo de nuevo.")
   }
   return users
 }
@@ -205,7 +205,7 @@ export async function signup(values: Signup): Promise<void> {
     !("id_usuario" in result) ||
     typeof result.id_usuario !== "number"
   ) {
-    throw new ApiError(201, "El servidor devolvió una respuesta de registro inválida.")
+    throw new ApiError(201, "No se pudo verificar el registro. Intenta iniciar sesión.")
   }
 }
 

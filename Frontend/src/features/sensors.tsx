@@ -26,7 +26,7 @@ import { formatDateTime, formatNumber, formatTime } from "@/lib/locale"
 const sensorLabels: Record<Sensor, { label: string; unit: string }> = {
   temperatura: { label: "Temperatura", unit: "°C" },
   humedad: { label: "Humedad", unit: "%" },
-  proximidad: { label: "Proximidad", unit: "" }
+  proximidad: { label: "Presencia", unit: "" }
 }
 const sensors = Object.keys(sensorLabels) as Sensor[]
 
@@ -34,7 +34,7 @@ function readingValue(sensor: Sensor, value: number) {
   return sensor === "proximidad"
     ? Number(value) === 1
       ? "Presencia detectada"
-      : "Sin detección"
+      : "Sin presencia detectada"
     : `${formatNumber(Number(value), { maximumFractionDigits: 1 })} ${sensorLabels[sensor].unit}`
 }
 
@@ -87,7 +87,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
           <div>
             <CardTitle>Lecturas recientes</CardTitle>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Últimas 50 lecturas · Se actualizan cada minuto mientras esta pestaña está visible.
+              Últimas 50 lecturas · Actualización cada minuto con la pestaña visible.
             </p>
           </div>
           <div className="w-44">
@@ -106,7 +106,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
           <RemoteState {...readings} />
           {readings.data?.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Aún no hay lecturas de {sensorLabels[sensor].label.toLowerCase()} para este cubículo.
+              Sin lecturas de {sensorLabels[sensor].label.toLowerCase()} en este cubículo.
             </p>
           )}
           {points.length > 0 && (
@@ -205,7 +205,7 @@ export function Sensors({ spaces }: { spaces: Espacio[] }) {
     <Section
       id="sensors"
       title="Condiciones de los cubículos"
-      description="Las mediciones muestran las últimas condiciones reportadas, independientemente de la disponibilidad para reservar."
+      description="Últimas mediciones. No indican disponibilidad para reservar."
       action={
         spaces.length > 0 && (
           <div className="w-full md:w-56">
@@ -227,7 +227,7 @@ export function Sensors({ spaces }: { spaces: Espacio[] }) {
       ) : (
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            Agrega un cubículo para consultar sus lecturas.
+            Aún no hay cubículos para consultar.
           </CardContent>
         </Card>
       )}

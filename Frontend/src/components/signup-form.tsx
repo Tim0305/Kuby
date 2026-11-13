@@ -53,8 +53,8 @@ export function SignupForm({ onLogin }: AuthFormProps) {
   return (
     <Card className="[--card-spacing:24px] max-md:[--card-spacing:20px] max-[359px]:[--card-spacing:16px]">
       <CardHeader className="gap-2 text-center">
-        <CardTitle role="heading" aria-level={1} className="text-2xl/[1.25] font-medium tracking-[-0.035em]">Crea tu cuenta</CardTitle>
-        <CardDescription>Comienza con tu cuenta de Kuby</CardDescription>
+        <CardTitle role="heading" aria-level={1} className="text-2xl/tight font-medium tracking-[-0.035em]">Crea tu cuenta</CardTitle>
+        <CardDescription>Regístrate con tu matrícula.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} aria-busy={pending}>
@@ -79,7 +79,7 @@ export function SignupForm({ onLogin }: AuthFormProps) {
             <Field data-invalid={!!fields.password}>
               <FieldLabel htmlFor="password">Contraseña</FieldLabel>
               <PasswordInput id="password" name="password" autoComplete={created ? "current-password" : "new-password"} minLength={created ? 1 : 8} maxLength={72} required disabled={pending} aria-invalid={!!fields.password} aria-describedby={fields.password ? "password-error password-hint" : "password-hint"} />
-              <FieldDescription id="password-hint">Usa de 8 a 72 caracteres.</FieldDescription>
+              <FieldDescription id="password-hint">De 8 a 72 caracteres.</FieldDescription>
               <FieldError id="password-error">{fields.password}</FieldError>
             </Field>
             {!created && <Field data-invalid={!!fields.confirm}>
@@ -88,10 +88,10 @@ export function SignupForm({ onLogin }: AuthFormProps) {
               <FieldError id="confirm-error">{fields.confirm}</FieldError>
             </Field>}
             <Field>
-              {created && <p role="status" className="text-[13px] text-muted-foreground">Tu cuenta se creó correctamente. Inicia sesión para continuar.</p>}
+              {created && <p role="status" className="text-[13px] text-muted-foreground">Cuenta creada. Inicia sesión para continuar.</p>}
               <FieldError>{error}</FieldError>
               <Button type="submit" disabled={pending} className="w-full">{pending ? (created ? "Iniciando sesión..." : "Creando cuenta...") : (created ? "Iniciar sesión" : "Crear cuenta")}</Button>
-              <FieldDescription className="text-center">¿Ya tienes una cuenta? <a href="/login">Iniciar sesión</a></FieldDescription>
+              <FieldDescription className="text-center">¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a></FieldDescription>
             </Field>
           </FieldGroup>
         </form>

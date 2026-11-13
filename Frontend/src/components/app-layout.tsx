@@ -64,7 +64,7 @@ function Navigation({
       ]
     : [
         { title: "Inicio", href: "#overview", icon: HouseIcon },
-        { title: "Explorar cubículos", href: "#spaces", icon: SquaresFourIcon },
+        { title: "Cubículos", href: "#spaces", icon: SquaresFourIcon },
         { title: "Mis reservaciones", href: "#reservations", icon: CalendarIcon }
       ]
   items.push(
@@ -122,7 +122,7 @@ function Navigation({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser role={admin ? "Administrador" : "Cuenta de usuario"} {...account} />
+        <NavUser role={admin ? "Administrador" : "Usuario"} {...account} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
@@ -166,7 +166,7 @@ export function AppLayout({
 
   const account: AccountProps = {
     name: `${user.nombre} ${user.apellido}`,
-    role: user.rol === "admin" ? "Administrador" : "Cuenta de usuario",
+    role: user.rol === "admin" ? "Administrador" : "Usuario",
     avatarUrl: user.tiene_foto
       ? `/api/usuarios/${user.id_usuario}/foto?v=${avatarVersion}`
       : undefined,
@@ -186,7 +186,7 @@ export function AppLayout({
             <span className="text-sm font-medium">
               {admin ? "Administración" : "Mi Kuby"}
             </span>
-            <span className="ml-auto hidden text-[13px] text-muted-foreground md:block">Reservaciones y acceso al campus</span>
+            <span className="ml-auto hidden text-[13px] text-muted-foreground md:block">Cubículos del campus</span>
           </header>
           {logoutError && (
             <p

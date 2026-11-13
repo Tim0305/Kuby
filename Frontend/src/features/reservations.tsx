@@ -43,9 +43,9 @@ import {
 function TimeFields({ reservation }: { reservation?: Reservacion }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField label="Hora de inicio">
+      <FormField label="Fecha y hora de inicio">
         <Input
-          aria-label="Hora de inicio"
+          aria-label="Fecha y hora de inicio"
           name="start"
           type="datetime-local"
           required
@@ -54,9 +54,9 @@ function TimeFields({ reservation }: { reservation?: Reservacion }) {
           }
         />
       </FormField>
-      <FormField label="Hora de fin">
+      <FormField label="Fecha y hora de fin">
         <Input
-          aria-label="Hora de fin"
+          aria-label="Fecha y hora de fin"
           name="end"
           type="datetime-local"
           required
@@ -81,7 +81,7 @@ export function BookingDialog({
   return (
     <Modal
       title={`Reservar ${space.nombre_espacio}`}
-      description={`${space.ubicacion || "Ubicación no especificada"} · Hasta ${space.capacidad} ${space.capacidad === 1 ? "persona" : "personas"}`}
+      description={`${space.ubicacion || "Sin ubicación registrada"} · Hasta ${space.capacidad} ${space.capacidad === 1 ? "persona" : "personas"}`}
       onClose={onClose}
     >
       <ActionForm
@@ -99,10 +99,10 @@ export function BookingDialog({
       >
         <TimeFields />
         <p className="text-sm text-muted-foreground">
-          Los horarios corresponden a tu zona horaria local. La disponibilidad se verifica al confirmar.
+          Hora local. La disponibilidad se verifica al confirmar.
         </p>
         <p className="border-l-2 border-primary pl-3 text-sm">
-          Registra tu entrada durante los primeros 10 minutos de tu reservación para conservarla.
+          Registra tu entrada en los primeros 10 minutos de tu horario para conservar tu reservación.
         </p>
       </ActionForm>
     </Modal>
@@ -119,7 +119,7 @@ export function CurrentReservation({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm text-visit-foreground">
           <CalendarBlankIcon className="size-5 text-visit-accent" />
-          Tu próxima visita
+          Tu reservación
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -133,7 +133,7 @@ export function CurrentReservation({
               <Status value={resource.data.estado_reservacion} />
             </div>
             <div className="grid grid-cols-[18px_minmax(0,1fr)] items-baseline gap-2 text-sm">
-              <ClockIcon aria-hidden="true" className="mt-[3px] size-4 self-start" />
+              <ClockIcon aria-hidden="true" className="mt-0.75 size-4 self-start" />
               <p className="flex flex-col flex-wrap gap-x-2.5 gap-y-1 md:flex-row">
                 <LocalTime value={resource.data.hora_inicio} />
                 <span aria-hidden="true" className="hidden md:inline">—</span>
@@ -141,16 +141,16 @@ export function CurrentReservation({
               </p>
             </div>
             <p className="max-w-[78ch] text-sm/[1.7] text-visit-muted">
-              Debes registrar tu primera entrada durante los primeros 10 minutos después de la hora de inicio. Puedes volver a entrar hasta la hora de fin.
+              Registra tu entrada en los primeros 10 minutos de tu horario. Puedes volver a entrar hasta que termine.
             </p>
           </>
         )}
         {resource.data === null && (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="font-medium">Dale espacio a tu próxima idea.</p>
+              <p className="font-medium">No tienes reservaciones próximas.</p>
               <p className="mt-1 text-sm text-visit-muted">
-                No tienes reservaciones próximas. Elige un cubículo a continuación.
+                Elige un cubículo para reservar.
               </p>
             </div>
             <CalendarBlankIcon className="size-11 shrink-0 text-visit-empty-icon" aria-hidden="true" />
@@ -177,8 +177,8 @@ export function Reservations({
       title={admin ? "Reservaciones" : "Mis reservaciones"}
       description={
         admin
-          ? "Administra las reservaciones de todos los cubículos."
-          : "Tus próximas visitas y tu historial de reservaciones."
+          ? "Consulta, reprograma o cancela reservaciones."
+          : "Consulta tus reservaciones y cambia las próximas."
       }
       action={<RefreshButton {...resource} />}
     >
@@ -238,7 +238,7 @@ export function Reservations({
                         <ConfirmAction
                           size="sm"
                           label="Cancelar reservación"
-                          description={`¿Quieres cancelar la reservación de ${reservation.nombre_espacio || "este cubículo"}? Se liberará ese horario.`}
+                          description={`Se cancelará la reservación de ${reservation.nombre_espacio || "este cubículo"} y el horario quedará libre.`}
                           action={() =>
                             cancelReservation(reservation.id_reservacion)
                           }
@@ -259,7 +259,7 @@ export function Reservations({
       {editing && (
         <Modal
           title="Reprogramar reservación"
-          description={`Elige un nuevo horario para ${editing.nombre_espacio}. La disponibilidad se verifica al guardar.`}
+          description={`${editing.nombre_espacio} · La disponibilidad se verifica al guardar.`}
           onClose={() => setEditing(undefined)}
         >
           <ActionForm

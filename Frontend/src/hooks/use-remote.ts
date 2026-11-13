@@ -46,7 +46,7 @@ export function useRemote<T>(
             ...previous,
             loading: false,
             error:
-              error instanceof Error ? error : new Error("No se pudieron cargar los datos.")
+              error instanceof Error ? error : new Error("No se pudieron cargar los datos. Inténtalo de nuevo.")
           }))
       }
     }
