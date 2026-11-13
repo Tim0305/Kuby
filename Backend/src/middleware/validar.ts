@@ -38,3 +38,22 @@ export const validarId: RequestHandler = (req, res, next) => {
   }
   next();
 };
+
+export function parsearQuery<T extends ZodType>(
+  esquema: T,
+  req: Request,
+  res: Response
+): z.output<T> | null {
+  const resultado = esquema.safeParse(req.query);
+  if (!resultado.success) {
+    res.status(400).json({
+      error: "Parámetros inválidos",
+      detalles: resultado.error.issues.map((i) => ({
+        campo: i.path.map(String).join("."),
+        mensaje: i.message,
+      })),
+    });
+    return null;
+  }
+  return resultado.data as z.output<T>;
+}
