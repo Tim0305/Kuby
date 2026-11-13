@@ -719,5 +719,7 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  // The shadcn sidebar intentionally exposes its context hook alongside its components.
+  // eslint-disable-next-line react-refresh/only-export-components
   useSidebar,
 }

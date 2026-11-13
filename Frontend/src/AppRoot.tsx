@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react"
-import App from "./App"
-import AppAdmin from "./AppAdmin"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { AuthPage } from "./components/auth-page"
 import { AuthShell } from "./components/auth-shell"
-import { Button, Card, CardContent, CardHeader, CardTitle } from "./components/ui"
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "./components/ui"
 import { ApiError, getCurrentUser } from "./lib/api"
 import type { Usuario } from "./lib/api"
 import { authRedirect } from "./lib/auth-routing"
+
+const App = lazy(() => import("./App"))
 
 type Session =
   | { status: "loading" }
@@ -38,7 +44,13 @@ export default function AppRoot() {
         if (error instanceof ApiError && error.status === 401) {
           finish(null)
         } else {
-          setSession({ status: "error", message: error instanceof Error ? error.message : "Could not check your session. Please try again." })
+          setSession({
+            status: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Could not check your session. Please try again."
+          })
         }
       }
     }
@@ -48,27 +60,66 @@ export default function AppRoot() {
   }, [attempt])
 
   if (session.status === "loading") {
-    return <AuthShell><p role="status" className="py-8 text-center text-sm text-muted-foreground">Checking your session...</p></AuthShell>
+    return (
+      <AuthShell>
+        <p
+          role="status"
+          className="py-8 text-center text-sm text-muted-foreground"
+        >
+          Checking your session...
+        </p>
+      </AuthShell>
+    )
   }
 
   if (session.status === "error") {
-    return <AuthShell>
-      <Card>
-        <CardHeader><CardTitle>Unable to connect</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <p role="alert" className="text-sm">{session.message}</p>
-          <Button className="w-full" onClick={() => {
-            setSession({ status: "loading" })
-            setAttempt((value) => value + 1)
-          }}>Try again</Button>
-        </CardContent>
-      </Card>
-    </AuthShell>
+    return (
+      <AuthShell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Unable to connect</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p role="alert" className="text-sm">
+              {session.message}
+            </p>
+            <Button
+              className="w-full"
+              onClick={() => {
+                setSession({ status: "loading" })
+                setAttempt((value) => value + 1)
+              }}
+            >
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </AuthShell>
+    )
   }
 
   if (!session.user) {
-    return <AuthPage signup={window.location.pathname.replace(/\/+$/, "") === "/signup"} />
+    return (
+      <AuthPage
+        signup={window.location.pathname.replace(/\/+$/, "") === "/signup"}
+      />
+    )
   }
 
-  return session.user.rol === "admin" ? <AppAdmin user={session.user} /> : <App user={session.user} />
+  return (
+    <Suspense
+      fallback={
+        <AuthShell>
+          <p
+            role="status"
+            className="py-8 text-center text-sm text-muted-foreground"
+          >
+            Loading your workspace…
+          </p>
+        </AuthShell>
+      }
+    >
+      <App user={session.user} />
+    </Suspense>
+  )
 }

@@ -16,6 +16,19 @@ The authentication pages adapt the shadcn `login-03` and `signup-03` blocks to K
 
 ## Verification
 
-- `npm test` runs authentication API and redirect regression tests.
+- `npm test` runs API and booking regression tests plus Chromium browser flows against an isolated in-memory API. It never connects to the real database. On a fresh machine, install the browser with `npx playwright install chromium --only-shell` first.
 - `npm run build` checks TypeScript and creates the production build.
 - `npm run lint` checks the project with ESLint.
+
+## Workspace features
+
+- Users can browse cubicles, book, reschedule upcoming reservations, cancel eligible reservations, and see their current/next visit. Availability is checked by the backend when saving; there is no public calendar API.
+- Admins also manage cubicles, all reservations, and user names, roles, and active/inactive status. Dashboard totals come from `/api/resumen` and include historical/inactive records.
+- Both roles can inspect sensor conditions and recent charts, filter and page through their permitted access history, and edit their own names, password, and photo.
+- Reservation status and sensor readings refresh every minute while the browser tab is visible. Dates are sent as ISO UTC and displayed in the browser's local time zone. Proximity detection is displayed separately from booking availability.
+
+Feature screens live directly in `src/features`, with shared forms and feedback in `shared.tsx`. The API client stays in `src/lib/api.ts`; `use-remote.ts` handles cancellation, retries, and polling. Both roles share one dashboard, while permissions remain enforced by the backend.
+
+The role picker defaults to the checked-in database seed (`admin = 1`, `usuario = 2`) and uses role IDs observed in loaded users when available. If a deployment uses different IDs without any users assigned to those roles, update these defaults; the backend currently has no role-list endpoint.
+
+Credential enrollment, device registration, alerts, facial recognition, lighting/curtain controls, and preferences remain excluded because the backend does not expose the required APIs. Reservation purpose is omitted because the backend does not persist it.
