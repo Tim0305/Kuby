@@ -1,12 +1,12 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { ApiError, signup } from "../lib/api"
-import type { AuthFormProps } from "./login-form"
-import { PasswordInput } from "./password-input"
+import { ApiError, signup } from "@/lib/api"
+import type { AuthFormProps } from "@/components/login-form"
+import { PasswordInput } from "@/components/password-input"
 import {
   Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
   Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input,
-} from "./ui"
+} from "@/components/ui"
 
 // Adapted from shadcn signup-03; account roles are assigned by the backend.
 export function SignupForm({ onLogin }: AuthFormProps) {

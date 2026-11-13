@@ -1,8 +1,8 @@
 ﻿import type { ReactNode } from "react"
-import { NavUser } from "./nav-user"
+import { NavUser } from "@/components/nav-user"
 import { useState, useSyncExternalStore } from "react"
-import { logout } from "../lib/api"
-import type { Usuario } from "../lib/api"
+import { logout } from "@/lib/api"
+import type { Usuario } from "@/lib/api"
 import type { ComponentProps } from "react"
 import {
   CalendarIcon,
@@ -30,7 +30,7 @@ import {
   SidebarTrigger,
   TooltipProvider,
   useSidebar
-} from "./ui"
+} from "@/components/ui"
 
 type AccountProps = Pick<
   ComponentProps<typeof NavUser>,

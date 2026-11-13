@@ -13,20 +13,20 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../components/ui"
+} from "@/components/ui"
 import {
   cancelReservation,
   createReservation,
   updateReservation
-} from "../lib/api"
-import type { Espacio, Reservacion } from "../lib/api"
-import type { RemoteResult } from "../hooks/use-remote"
+} from "@/lib/api"
+import type { Espacio, Reservacion } from "@/lib/api"
+import type { RemoteResult } from "@/hooks/use-remote"
 import {
   bookingTimes,
   canCancel,
   canReschedule,
   toLocalInput
-} from "../lib/booking"
+} from "@/lib/booking"
 import {
   ActionForm,
   ConfirmAction,
@@ -38,7 +38,7 @@ import {
   Section,
   Status,
   text
-} from "./shared"
+} from "@/features/shared"
 
 function TimeFields({ reservation }: { reservation?: Reservacion }) {
   return (

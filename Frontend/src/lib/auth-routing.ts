@@ -1,4 +1,4 @@
-import type { Usuario } from "./api"
+import type { Usuario } from "@/lib/api"
 
 export function homeFor(user: Pick<Usuario, "rol">): "/" | "/admin" {
   return user.rol === "admin" ? "/admin" : "/"

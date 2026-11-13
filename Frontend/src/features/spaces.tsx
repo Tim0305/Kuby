@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
   Input
-} from "../components/ui"
-import { createSpace, deactivateSpace, updateSpace } from "../lib/api"
-import type { Espacio, EstadoEspacio } from "../lib/api"
-import type { RemoteResult } from "../hooks/use-remote"
-import { BookingDialog } from "./reservations"
+} from "@/components/ui"
+import { createSpace, deactivateSpace, updateSpace } from "@/lib/api"
+import type { Espacio, EstadoEspacio } from "@/lib/api"
+import type { RemoteResult } from "@/hooks/use-remote"
+import { BookingDialog } from "@/features/reservations"
 import {
   ActionForm,
   Choice,
@@ -22,7 +22,7 @@ import {
   Section,
   Status,
   text
-} from "./shared"
+} from "@/features/shared"
 
 function SpaceEditor({
   space,

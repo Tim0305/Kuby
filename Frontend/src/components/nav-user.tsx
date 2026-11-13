@@ -13,7 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem
-} from "./ui"
+} from "@/components/ui"
 
 type NavUserProps = {
   name?: string

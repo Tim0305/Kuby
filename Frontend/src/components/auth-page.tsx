@@ -1,8 +1,8 @@
-import { getCurrentUser, login } from "../lib/api"
-import { homeFor } from "../lib/auth-routing"
-import { AuthShell } from "./auth-shell"
-import { LoginForm } from "./login-form"
-import { SignupForm } from "./signup-form"
+import { getCurrentUser, login } from "@/lib/api"
+import { homeFor } from "@/lib/auth-routing"
+import { AuthShell } from "@/components/auth-shell"
+import { LoginForm } from "@/components/login-form"
+import { SignupForm } from "@/components/signup-form"
 
 export function AuthPage({ signup = false }: { signup?: boolean }) {
   async function handleLogin(matricula: string, password: string) {

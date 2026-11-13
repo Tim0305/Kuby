@@ -1,4 +1,4 @@
-import type { EstadoReservacion, Horario } from "./api"
+import type { EstadoReservacion, Horario } from "@/lib/api"
 
 export const canReschedule = (state: EstadoReservacion) => state === "creada"
 export const canCancel = (state: EstadoReservacion) =>

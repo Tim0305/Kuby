@@ -1,7 +1,7 @@
 import { cloneElement, useId, useRef, useState } from "react"
 import type { ReactElement, ReactNode } from "react"
 import { ArrowClockwiseIcon } from "@phosphor-icons/react"
-import { ApiError } from "../lib/api"
+import { ApiError } from "@/lib/api"
 import {
   Badge,
   Button,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton
-} from "../components/ui"
+} from "@/components/ui"
 
 export function Section({
   id,

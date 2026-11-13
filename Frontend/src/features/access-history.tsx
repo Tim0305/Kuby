@@ -10,10 +10,10 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../components/ui"
-import { getAccessHistory } from "../lib/api"
-import type { Espacio, FiltrosAccesos } from "../lib/api"
-import { useRemote } from "../hooks/use-remote"
+} from "@/components/ui"
+import { getAccessHistory } from "@/lib/api"
+import type { Espacio, FiltrosAccesos } from "@/lib/api"
+import { useRemote } from "@/hooks/use-remote"
 import {
   ActionForm,
   Choice,
@@ -24,7 +24,7 @@ import {
   Section,
   Status,
   text
-} from "./shared"
+} from "@/features/shared"
 
 const denialReasons: Record<string, string> = {
   credencial_invalida: "Unknown credential",

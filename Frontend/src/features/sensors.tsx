@@ -11,16 +11,16 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../components/ui"
+} from "@/components/ui"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent
-} from "../components/ui/chart"
-import { getReadings, getSensorState } from "../lib/api"
-import type { Espacio, Sensor } from "../lib/api"
-import { useRemote } from "../hooks/use-remote"
-import { Choice, LocalTime, RemoteState, Section } from "./shared"
+} from "@/components/ui/chart"
+import { getReadings, getSensorState } from "@/lib/api"
+import type { Espacio, Sensor } from "@/lib/api"
+import { useRemote } from "@/hooks/use-remote"
+import { Choice, LocalTime, RemoteState, Section } from "@/features/shared"
 
 const sensorLabels: Record<Sensor, { label: string; unit: string }> = {
   temperatura: { label: "Temperature", unit: "°C" },

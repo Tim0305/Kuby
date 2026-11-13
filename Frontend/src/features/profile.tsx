@@ -8,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
   Input
-} from "../components/ui"
-import { PasswordInput } from "../components/password-input"
-import { deletePhoto, updateProfile, uploadPhoto } from "../lib/api"
-import type { Usuario } from "../lib/api"
-import { validatePhoto } from "../lib/booking"
-import { ActionForm, ConfirmAction, FormField, Section, text } from "./shared"
+} from "@/components/ui"
+import { PasswordInput } from "@/components/password-input"
+import { deletePhoto, updateProfile, uploadPhoto } from "@/lib/api"
+import type { Usuario } from "@/lib/api"
+import { validatePhoto } from "@/lib/booking"
+import { ActionForm, ConfirmAction, FormField, Section, text } from "@/features/shared"
 
 export function Profile({
   user,

@@ -9,10 +9,10 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../components/ui"
-import { deactivateUser, getUsers, updateUser } from "../lib/api"
-import type { Usuario } from "../lib/api"
-import { useRemote } from "../hooks/use-remote"
+} from "@/components/ui"
+import { deactivateUser, getUsers, updateUser } from "@/lib/api"
+import type { Usuario } from "@/lib/api"
+import { useRemote } from "@/hooks/use-remote"
 import {
   ActionForm,
   Choice,
@@ -23,7 +23,7 @@ import {
   Section,
   Status,
   text
-} from "./shared"
+} from "@/features/shared"
 
 function UserEditor({
   user,

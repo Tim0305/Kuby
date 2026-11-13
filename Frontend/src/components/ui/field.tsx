@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react"
 import { cn } from "cn"
-import { Label } from "./label"
+import { Label } from "@/components/ui/label"
 
 // Vertical field primitives from shadcn's Field component.
 function FieldGroup({ className, ...props }: ComponentProps<"div">) {

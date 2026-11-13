@@ -1,18 +1,18 @@
 import { lazy, Suspense, useEffect, useState } from "react"
-import { AuthPage } from "./components/auth-page"
-import { AuthShell } from "./components/auth-shell"
+import { AuthPage } from "@/components/auth-page"
+import { AuthShell } from "@/components/auth-shell"
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle
-} from "./components/ui"
-import { ApiError, getCurrentUser } from "./lib/api"
-import type { Usuario } from "./lib/api"
-import { authRedirect } from "./lib/auth-routing"
+} from "@/components/ui"
+import { ApiError, getCurrentUser } from "@/lib/api"
+import type { Usuario } from "@/lib/api"
+import { authRedirect } from "@/lib/auth-routing"
 
-const App = lazy(() => import("./App"))
+const App = lazy(() => import("@/App"))
 
 type Session =
   | { status: "loading" }

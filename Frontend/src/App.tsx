@@ -1,29 +1,29 @@
 import { lazy, Suspense, useCallback, useState } from "react"
-import { AppLayout } from "./components/app-layout"
+import { AppLayout } from "@/components/app-layout"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Skeleton
-} from "./components/ui"
-import { AccessHistory } from "./features/access-history"
-import { Profile } from "./features/profile"
-import { CurrentReservation, Reservations } from "./features/reservations"
-import { Spaces } from "./features/spaces"
-import { Users } from "./features/users"
-import { RemoteState } from "./features/shared"
-import { useRemote } from "./hooks/use-remote"
+} from "@/components/ui"
+import { AccessHistory } from "@/features/access-history"
+import { Profile } from "@/features/profile"
+import { CurrentReservation, Reservations } from "@/features/reservations"
+import { Spaces } from "@/features/spaces"
+import { Users } from "@/features/users"
+import { RemoteState } from "@/features/shared"
+import { useRemote } from "@/hooks/use-remote"
 import {
   getCurrentReservation,
   getReservations,
   getSpaces,
   getSummary
-} from "./lib/api"
-import type { Usuario } from "./lib/api"
+} from "@/lib/api"
+import type { Usuario } from "@/lib/api"
 
 const Sensors = lazy(() =>
-  import("./features/sensors").then((module) => ({ default: module.Sensors }))
+  import("@/features/sensors").then((module) => ({ default: module.Sensors }))
 )
 
 const summaryLabels: Record<string, string> = {
