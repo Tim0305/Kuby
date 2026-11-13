@@ -150,20 +150,20 @@ export function Spaces({
           </CardContent>
         </Card>
       )}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="space-grid">
         {resource.data?.map((space) => (
-          <Card key={space.id_espacio}>
+          <Card key={space.id_espacio} className="space-card">
             <CardHeader>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="font-mono text-xs text-muted-foreground">
-                  CUBÍCULO {String(space.id_espacio).padStart(2, "0")}
+              <div className="space-meta">
+                <span className="space-number">
+                  Cubículo {String(space.id_espacio).padStart(2, "0")}
                 </span>
                 <Status value={space.estado_espacio} />
               </div>
-              <CardTitle className="text-lg">{space.nombre_espacio}</CardTitle>
+              <CardTitle>{space.nombre_espacio}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2 text-sm text-muted-foreground">
+            <CardContent>
+              <div className="space-facts">
                 <p className="flex items-center gap-2">
                   <MapPinIcon />
                   {space.ubicacion || "Ubicación no especificada"}
@@ -173,7 +173,7 @@ export function Spaces({
                   Hasta {space.capacidad} {space.capacidad === 1 ? "persona" : "personas"}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="space-actions">
                 <Button
                   disabled={space.estado_espacio !== "activo"}
                   onClick={() => setBooking(space)}

@@ -81,13 +81,13 @@ function Navigation({
             <SidebarMenuButton
               render={<a href={admin ? "/admin" : "/"} />}
               tooltip="Kuby"
-              className="h-12"
+              className="kuby-brand"
             >
               <SquaresFourIcon />
               <img
                 src="/assets/LogoKuby.png"
                 alt="Kuby"
-                className="h-8 w-auto object-contain invert group-data-[collapsible=icon]:hidden"
+                className="h-8 w-auto object-contain group-data-[collapsible=icon]:hidden"
               />
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -126,6 +126,11 @@ function Navigation({
       <SidebarRail />
     </Sidebar>
   )
+}
+
+function WorkspaceSidebarTrigger() {
+  const { isMobile, openMobile, open } = useSidebar()
+  return <SidebarTrigger aria-expanded={isMobile ? openMobile : open} />
 }
 
 export function AppLayout({
@@ -170,14 +175,17 @@ export function AppLayout({
 
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <a className="kuby-skip-link" href="#main-content">Ir al contenido</a>
+      <SidebarProvider className="kuby-shell">
         <Navigation admin={admin} account={account} />
-        <SidebarInset className="min-w-0">
-          <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-            <SidebarTrigger />
-            <span className="text-sm font-medium">
+        <SidebarInset className="min-w-0" id="main-content" tabIndex={-1}>
+          <header className="workspace-topbar">
+            <WorkspaceSidebarTrigger />
+            <span className="topbar-divider" aria-hidden="true" />
+            <span className="topbar-title">
               {admin ? "Administración" : "Mi Kuby"}
             </span>
+            <span className="topbar-context">Reservaciones y acceso al campus</span>
           </header>
           {logoutError && (
             <p

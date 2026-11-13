@@ -58,7 +58,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
   return (
     <div className="space-y-4">
       <RemoteState {...state} />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="sensor-summary">
         {sensors.map((sensor) => {
           const reading = state.data?.find((row) => row.tipo_sensor === sensor)
           return (
@@ -67,7 +67,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                 <CardTitle>{sensorLabels[sensor].label}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-2xl font-semibold tabular-nums">
+                <p className={`sensor-value${sensor === "proximidad" ? " sensor-value--presence" : ""}`}>
                   {reading ? readingValue(sensor, reading.valor) : "—"}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -102,7 +102,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
             />
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <RemoteState {...readings} />
           {readings.data?.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
@@ -110,58 +110,60 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
             </p>
           )}
           {points.length > 0 && (
-            <>
-              <ChartContainer
-                config={{
-                  valor: {
-                    label: sensorLabels[sensor].label,
-                    color: "var(--chart-1)"
-                  }
-                }}
-                className="h-56 w-full"
-                aria-label={`Historial de ${sensorLabels[sensor].label.toLowerCase()}`}
-              >
-                <LineChart
-                  accessibilityLayer
-                  data={points}
-                  margin={{ left: 0, right: 12, top: 8, bottom: 0 }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="fecha"
-                    tickLine={false}
-                    axisLine={false}
-                    minTickGap={40}
-                    tickFormatter={(value: string) => formatTime(value)}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    width={42}
-                    domain={sensor === "proximidad" ? [0, 1] : ["auto", "auto"]}
-                    allowDecimals={sensor !== "proximidad"}
-                    tickFormatter={(value: number) => formatNumber(value)}
-                    unit={sensorLabels[sensor].unit}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(_, payload) =>
-                          formatDateTime(String(payload[0]?.payload?.fecha))
-                        }
-                      />
+            <div className="sensor-history">
+              <div className="sensor-chart">
+                <ChartContainer
+                  config={{
+                    valor: {
+                      label: sensorLabels[sensor].label,
+                      color: "var(--chart-1)"
                     }
-                  />
-                  <Line
-                    dataKey="valor"
-                    type={sensor === "proximidad" ? "stepAfter" : "linear"}
-                    stroke="var(--color-valor)"
-                    strokeWidth={2}
-                    dot={points.length === 1}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ChartContainer>
+                  }}
+                  className="h-56 w-full"
+                  aria-label={`Historial de ${sensorLabels[sensor].label.toLowerCase()}`}
+                >
+                  <LineChart
+                    accessibilityLayer
+                    data={points}
+                    margin={{ left: 8, right: 16, top: 12, bottom: 0 }}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="fecha"
+                      tickLine={false}
+                      axisLine={false}
+                      minTickGap={40}
+                      tickFormatter={(value: string) => formatTime(value)}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      width={56}
+                      domain={sensor === "proximidad" ? [0, 1] : ["auto", "auto"]}
+                      allowDecimals={sensor !== "proximidad"}
+                      tickFormatter={(value: number) => formatNumber(value)}
+                      unit={sensorLabels[sensor].unit}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(_, payload) =>
+                            formatDateTime(String(payload[0]?.payload?.fecha))
+                          }
+                        />
+                      }
+                    />
+                    <Line
+                      dataKey="valor"
+                      type={sensor === "proximidad" ? "stepAfter" : "linear"}
+                      stroke="var(--color-valor)"
+                      strokeWidth={2}
+                      dot={points.length === 1}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -184,7 +186,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                   ))}
                 </TableBody>
               </Table>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>

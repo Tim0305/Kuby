@@ -115,7 +115,7 @@ export function CurrentReservation({
   resource: RemoteResult<Reservacion | null>
 }) {
   return (
-    <Card className="border-l-4 border-l-primary">
+    <Card className="current-visit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarBlankIcon />
@@ -132,11 +132,14 @@ export function CurrentReservation({
               </p>
               <Status value={resource.data.estado_reservacion} />
             </div>
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-              <ClockIcon />
-              <LocalTime value={resource.data.hora_inicio} /> —{" "}
-              <LocalTime value={resource.data.hora_fin} />
-            </p>
+            <div className="visit-schedule">
+              <ClockIcon aria-hidden="true" />
+              <p className="visit-times">
+                <LocalTime value={resource.data.hora_inicio} />
+                <span aria-hidden="true">—</span>
+                <LocalTime value={resource.data.hora_fin} />
+              </p>
+            </div>
             <p className="text-sm text-muted-foreground">
               Debes registrar tu primera entrada durante los primeros 10 minutos después de la hora de inicio. Puedes volver a entrar hasta la hora de fin.
             </p>
@@ -150,11 +153,7 @@ export function CurrentReservation({
                 No tienes reservaciones próximas. Elige un cubículo a continuación.
               </p>
             </div>
-            <img
-              src="/assets/LogoKuby.png"
-              alt="Kuby"
-              className="h-8 w-auto object-contain invert"
-            />
+            <CalendarBlankIcon className="visit-empty-icon" aria-hidden="true" />
           </div>
         )}
       </CardContent>

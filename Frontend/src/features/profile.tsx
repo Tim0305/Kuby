@@ -19,7 +19,7 @@ import { ActionForm, ConfirmAction, FormField, Section, text } from "@/features/
 // Keep the native file picker while giving its visible controls Spanish text.
 function PhotoInput({ fileName, ...props }: ComponentProps<typeof Input> & { fileName: string }) {
   return (
-    <div className="relative flex h-10 min-w-0 items-center gap-2 border border-input bg-background px-2.5 text-xs focus-within:outline-2 focus-within:outline-ring">
+    <div className="photo-input relative flex h-10 min-w-0 items-center gap-2 border border-input bg-background px-2.5 text-xs focus-within:outline-2 focus-within:outline-ring">
       <Input {...props} type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
       <span aria-hidden="true" className="shrink-0 bg-muted px-2 py-1 font-medium">Seleccionar archivo</span>
       <span aria-hidden="true" className="min-w-0 truncate text-muted-foreground">{fileName || "Ningún archivo seleccionado"}</span>
@@ -42,7 +42,7 @@ export function Profile({
       title="Mi perfil"
       description={`${user.matricula} · ${user.rol === "admin" ? "Administrador" : "Cuenta de usuario"}`}
     >
-      <div className="grid items-start gap-4 xl:grid-cols-3">
+      <div className="profile-grid">
         <Card>
           <CardHeader>
             <CardTitle>Datos personales</CardTitle>

@@ -116,6 +116,10 @@ const api = createHttpServer(async (req, res) => {
       res.writeHead(status, { "Content-Type": "application/json" })
       res.end(status === 204 ? undefined : JSON.stringify(body))
     }
+    if (route === "/auth/logout") {
+      fixture.expired = true
+      return send(null, 204)
+    }
     if (fixture.expired) return send({ error: "Sesión inválida o expirada" }, 401)
     if (route === "/auth/me")
       return send(fixture.users.find((user) => user.id_usuario === userId))
@@ -805,4 +809,87 @@ test("authentication stays Spanish in an English browser, including validation a
   } finally {
     await context.close()
   }
+})
+
+
+test('dashboard responsive audit keeps navigation and content usable at every breakpoint', { timeout: 120_000 }, async () => {
+  const { writeFile } = await import('node:fs/promises')
+  const auditDir = process.env.TASTE_AUDIT_DIR
+  const measurements = []
+  if (auditDir) await mkdir(auditDir, { recursive: true })
+  for (const admin of [false, true]) {
+    const { page, context, errors } = await openPage(admin)
+    try {
+      await expect(page.locator('#sensors')).toContainText('24.5 °C')
+      await page.evaluate(() => document.fonts.ready)
+      for (const [width, height] of [[1440,900],[1024,768],[820,1180],[768,1024],[390,844],[320,844]]) {
+        await page.setViewportSize({ width, height })
+        await page.evaluate(() => window.scrollTo(0,0))
+        await expect(page.locator('#spaces [data-slot=card]')).toHaveCount(2)
+        const measurement = await page.evaluate(() => {
+          const rect = el => { const r=el.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y+scrollY),width:Math.round(r.width),height:Math.round(r.height)} }
+          const textStyle = el => {const s=getComputedStyle(el);return {font:s.fontFamily,size:s.fontSize,color:s.color,background:s.backgroundColor}}
+          return {viewport:{width:innerWidth,height:innerHeight},documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,heading:rect(document.querySelector('h1')),headingStyle:textStyle(document.querySelector('h1')),bodyStyle:textStyle(document.body),sections:[...document.querySelectorAll('section[id]')].map(el=>({id:el.id,...rect(el)})),cardsAboveFold:[...document.querySelectorAll('[data-slot=card]')].filter(el=>{const r=el.getBoundingClientRect();return r.top<innerHeight&&r.bottom>0}).length,controls:[...document.querySelectorAll('main button, main input, main [role=combobox]')].filter(el=>el.getBoundingClientRect().width>0).map(el=>({label:el.getAttribute('aria-label')||el.textContent.trim(),...rect(el)})),horizontalTables:[...document.querySelectorAll('[data-slot=table-container]')].map(el=>({width:el.clientWidth,scrollWidth:el.scrollWidth})),reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches}
+        })
+        measurements.push({role:admin?'admin':'user',...measurement})
+        assert.ok(measurement.documentWidth <= width, 'page should not scroll sideways at '+width)
+        if(auditDir){
+          await page.screenshot({path:auditDir+'/'+(admin?'admin':'user')+'-'+width+'.png'})
+          if (width === 1440 || width === 390) {
+            await page.screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-" + width + "-full.png", fullPage: true })
+            await page.locator("#sensors").screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-sensors-" + width + ".png" })
+            await page.locator("#profile").screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-profile-" + width + ".png" })
+          }
+        }
+      }
+      await page.setViewportSize({width:1440,height:900})
+      const navigation=page.locator('[data-slot=sidebar-content]')
+      for(const href of ['#overview','#spaces','#reservations',...(admin?['#users']:[]),'#sensors','#access','#profile']){
+        const link=navigation.locator('a[href="'+href+'"]')
+        await link.click()
+        await expect(link).toHaveAttribute('aria-current','location')
+        await expect(page).toHaveURL(origin+(admin?'admin':'')+href)
+      }
+      const toggle = page.locator('[data-slot="sidebar-trigger"]')
+      await toggle.click()
+      await expect(toggle).toHaveAttribute("aria-expanded", "false")
+      if (auditDir) await page.screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-sidebar-collapsed.png" })
+      await toggle.click()
+      await expect(toggle).toHaveAttribute("aria-expanded", "true")
+      await page.setViewportSize({ width: 390, height: 844 })
+      for (const href of ["#overview", "#spaces", "#reservations", ...(admin ? ["#users"] : []), "#sensors", "#access", "#profile"]) {
+        await toggle.click()
+        await expect(toggle).toHaveAttribute("aria-expanded", "true")
+        const menu = page.getByRole("dialog")
+        await expect(menu).toBeVisible()
+        if (auditDir && href === "#overview") await page.screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-mobile-menu.png" })
+        await menu.locator('a[href="' + href + '"]').click()
+        await expect(menu).toHaveCount(0)
+        await expect(toggle).toHaveAttribute("aria-expanded", "false")
+      }
+      await page.goto(origin + (admin ? "admin" : ""))
+      await page.reload()
+      await expect(page.getByRole("heading", { name: admin ? "Un espacio para cada idea." : "Hola, Sam." })).toBeVisible()
+      await page.keyboard.press("Tab")
+      await expect(page.getByRole("link", { name: "Ir al contenido", exact: true })).toBeFocused()
+      await page.keyboard.press("Enter")
+      await expect(page.locator("main")).toBeFocused()
+      await page.locator("#spaces").getByRole("button", { name: "Reservar cubículo", exact: true }).click()
+      const bookingDialog = page.getByRole("dialog")
+      await expect(bookingDialog).toBeVisible()
+      if (auditDir) await page.screenshot({ path: auditDir + "/" + (admin ? "admin" : "user") + "-booking-mobile.png" })
+      await page.keyboard.press("Escape")
+      await expect(bookingDialog).toHaveCount(0)
+      await page.setViewportSize({width:1440,height:900})
+      await page.getByRole('button',{name:/Abrir menú de cuenta/}).click()
+      await expect(page.getByRole('menuitem',{name:'Cerrar sesión',exact:true})).toBeVisible()
+      await page.getByRole('menuitem',{name:'Mi perfil',exact:true}).click()
+      await page.getByRole('button',{name:/Abrir menú de cuenta/}).click()
+      await page.getByRole('menuitem',{name:'Cerrar sesión',exact:true}).click()
+      await expect(page).toHaveURL(origin+'login')
+      assert.ok(requests.some(r=>r.route==='/auth/logout'&&r.method==='POST'))
+      assert.deepEqual(errors,[])
+    } finally { await context.close() }
+  }
+  if(auditDir)await writeFile(auditDir+'/measurements.json',JSON.stringify(measurements,null,2))
 })

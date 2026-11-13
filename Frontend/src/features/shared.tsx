@@ -39,15 +39,15 @@ export function Section({
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="scroll-mt-6 space-y-4"
+      className="dashboard-section"
     >
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 id={`${id}-title`} className="!mb-1 !text-xl font-semibold">
+      <header className="section-heading">
+        <div className="section-copy">
+          <h2 id={`${id}-title`}>
             {title}
           </h2>
           {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p>{description}</p>
           )}
         </div>
         {action}
@@ -118,6 +118,7 @@ const statusNames: Record<string, string> = {
 export function Status({ value }: { value: string }) {
   return (
     <Badge
+      data-status={value}
       variant={
         value === "denegado" || value === "inactivo" || value === "cancelada"
           ? "outline"
@@ -180,7 +181,9 @@ export function Choice({
         aria-label={label}
         className="h-10 w-full bg-background text-sm"
       >
-        <SelectValue placeholder={label} />
+        <SelectValue
+          placeholder={options.find((option) => option.value === value)?.label ?? label}
+        />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

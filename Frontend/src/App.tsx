@@ -1,6 +1,14 @@
 import { lazy, Suspense, useCallback, useState } from "react"
+import {
+  ArrowUpRightIcon,
+  CalendarIcon,
+  ListChecksIcon,
+  SquaresFourIcon,
+  UsersIcon
+} from "@phosphor-icons/react"
 import { AppLayout } from "@/components/app-layout"
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -27,6 +35,13 @@ const Sensors = lazy(() =>
 )
 
 import { formatNumber } from "@/lib/locale"
+
+const summaryIcons = {
+  usuarios: UsersIcon,
+  espacios: SquaresFourIcon,
+  reservaciones: CalendarIcon,
+  accesos: ListChecksIcon
+}
 
 const summaryLabels: Record<string, string> = {
   usuarios: "Usuarios",
@@ -61,35 +76,38 @@ export default function App({ user: initialUser }: { user: Usuario }) {
     <AppLayout admin={admin} user={user} avatarVersion={profileVersion}>
       <div
         id="overview"
-        className="workspace min-w-0 flex-1 bg-muted/30 p-4 text-left sm:p-6 lg:p-8"
+        className="workspace min-w-0 flex-1"
       >
-        <div className="mx-auto max-w-7xl space-y-10">
-          <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
+        <div className="workspace-content">
+          <header className="workspace-heading">
             <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="workspace-eyebrow">
                 {admin ? "Kuby / Administración" : "Tu espacio de trabajo en el campus"}
               </p>
-              <h1 className="!m-0 !text-3xl !font-semibold !tracking-tight sm:!text-4xl">
+              <h1>
                 {admin
                   ? "Un espacio para cada idea."
                   : "Hola, " + user.nombre + "."}
               </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p>
                 {admin
                   ? "Administra los espacios, las personas y sus visitas."
                   : "Concéntrate en lo que importa. Reserva un cubículo para tu próxima sesión."}
               </p>
             </div>
-            <img
-              src="/assets/LogoKuby.png"
-              alt="Kuby"
-              className="h-9 w-auto object-contain invert"
-            />
+            <Button
+              nativeButton={false}
+              render={<a href={admin ? "#reservations" : "#spaces"} />}
+              variant="outline"
+            >
+              {admin ? "Ver reservaciones" : "Explorar cubículos"}
+              <ArrowUpRightIcon data-icon="inline-end" />
+            </Button>
           </header>
           {notice && (
             <p
               role="status"
-              className="border-l-2 border-primary bg-primary/5 px-4 py-3 text-sm text-foreground"
+              className="workspace-notice"
             >
               {notice}
             </p>
@@ -99,23 +117,27 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               <RemoteState {...summary} />
               {summary.data && (
                 <div
-                  className="grid grid-cols-2 gap-4 xl:grid-cols-4"
+                  className="summary-grid"
                   aria-label="Totales de administración"
                 >
-                  {Object.entries(summary.data).map(([key, value]) => (
-                    <Card key={key}>
-                      <CardHeader>
-                        <CardTitle className="text-muted-foreground">
-                          {summaryLabels[key]}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-semibold tabular-nums">
-                          {formatNumber(value)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {Object.entries(summary.data).map(([key, value]) => {
+                    const Icon = summaryIcons[key as keyof typeof summaryIcons]
+                    return (
+                      <Card key={key}>
+                        <CardHeader>
+                          <CardTitle>
+                            {summaryLabels[key]}
+                            {Icon && <Icon aria-hidden="true" />}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="summary-value">
+                            {formatNumber(value)}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
             </div>
