@@ -12,16 +12,16 @@ function Field({ className, ...props }: ComponentProps<"div">) {
 }
 
 function FieldLabel({ className, ...props }: ComponentProps<typeof Label>) {
-  return <Label data-slot="field-label" className={cn("flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50", className)} {...props} />
+  return <Label data-slot="field-label" className={cn("flex w-fit gap-2 text-[13px]/[1.4] font-medium group-data-[disabled=true]/field:opacity-50", className)} {...props} />
 }
 
 function FieldDescription({ className, ...props }: ComponentProps<"p">) {
-  return <p data-slot="field-description" className={cn("text-xs/relaxed font-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary", className)} {...props} />
+  return <p data-slot="field-description" className={cn("text-[13px]/relaxed font-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary", className)} {...props} />
 }
 
 function FieldError({ className, children, ...props }: ComponentProps<"div">) {
   if (!children) return null
-  return <div role="alert" data-slot="field-error" className={cn("text-xs font-normal text-destructive", className)} {...props}>{children}</div>
+  return <div role="alert" data-slot="field-error" className={cn("text-[13px] font-normal text-destructive", className)} {...props}>{children}</div>
 }
 
 export { Field, FieldGroup, FieldLabel, FieldDescription, FieldError }

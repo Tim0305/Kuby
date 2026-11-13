@@ -115,10 +115,10 @@ export function CurrentReservation({
   resource: RemoteResult<Reservacion | null>
 }) {
   return (
-    <Card className="current-visit">
+    <Card className="gap-4 border-visit bg-visit py-6 text-visit-foreground">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarBlankIcon />
+        <CardTitle className="flex items-center gap-2 text-sm text-visit-foreground">
+          <CalendarBlankIcon className="size-5 text-visit-accent" />
           Tu próxima visita
         </CardTitle>
       </CardHeader>
@@ -132,15 +132,15 @@ export function CurrentReservation({
               </p>
               <Status value={resource.data.estado_reservacion} />
             </div>
-            <div className="visit-schedule">
-              <ClockIcon aria-hidden="true" />
-              <p className="visit-times">
+            <div className="grid grid-cols-[18px_minmax(0,1fr)] items-baseline gap-2 text-sm">
+              <ClockIcon aria-hidden="true" className="mt-[3px] size-4 self-start" />
+              <p className="flex flex-col flex-wrap gap-x-2.5 gap-y-1 md:flex-row">
                 <LocalTime value={resource.data.hora_inicio} />
-                <span aria-hidden="true">—</span>
+                <span aria-hidden="true" className="hidden md:inline">—</span>
                 <LocalTime value={resource.data.hora_fin} />
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-[78ch] text-sm/[1.7] text-visit-muted">
               Debes registrar tu primera entrada durante los primeros 10 minutos después de la hora de inicio. Puedes volver a entrar hasta la hora de fin.
             </p>
           </>
@@ -149,11 +149,11 @@ export function CurrentReservation({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-medium">Dale espacio a tu próxima idea.</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-visit-muted">
                 No tienes reservaciones próximas. Elige un cubículo a continuación.
               </p>
             </div>
-            <CalendarBlankIcon className="visit-empty-icon" aria-hidden="true" />
+            <CalendarBlankIcon className="size-11 shrink-0 text-visit-empty-icon" aria-hidden="true" />
           </div>
         )}
       </CardContent>
@@ -184,7 +184,7 @@ export function Reservations({
     >
       <RemoteState {...resource} />
       {resource.data && (
-        <Card>
+        <Card className="gap-0 py-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -227,6 +227,7 @@ export function Reservations({
                     <div className="flex justify-end gap-2">
                       {canReschedule(reservation.estado_reservacion) && (
                         <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setEditing(reservation)}
                         >
@@ -235,6 +236,7 @@ export function Reservations({
                       )}
                       {canCancel(reservation.estado_reservacion) && (
                         <ConfirmAction
+                          size="sm"
                           label="Cancelar reservación"
                           description={`¿Quieres cancelar la reservación de ${reservation.nombre_espacio || "este cubículo"}? Se liberará ese horario.`}
                           action={() =>

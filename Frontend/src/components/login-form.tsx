@@ -37,9 +37,9 @@ export function LoginForm({ onLogin }: AuthFormProps) {
   }
 
   return (
-    <Card className="border border-transparent [--card-spacing:--spacing(6)]">
+    <Card className="[--card-spacing:24px] max-md:[--card-spacing:20px] max-[359px]:[--card-spacing:16px]">
       <CardHeader className="gap-2 text-center">
-        <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">Te damos la bienvenida</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-2xl/[1.25] font-medium tracking-[-0.035em]">Te damos la bienvenida</CardTitle>
         <CardDescription>Inicia sesión en tu cuenta de Kuby</CardDescription>
       </CardHeader>
       <CardContent>
@@ -47,7 +47,7 @@ export function LoginForm({ onLogin }: AuthFormProps) {
           <FieldGroup>
             <Field data-invalid={!!fields.matricula}>
               <FieldLabel htmlFor="matricula">Matrícula</FieldLabel>
-              <Input id="matricula" name="matricula" placeholder="A00000000" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={20} required disabled={pending} aria-invalid={!!fields.matricula} aria-describedby={fields.matricula ? "matricula-error" : undefined} className="h-10 bg-background text-sm md:text-sm" />
+              <Input id="matricula" name="matricula" placeholder="A00000000" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={20} required disabled={pending} aria-invalid={!!fields.matricula} aria-describedby={fields.matricula ? "matricula-error" : undefined}  />
               <FieldError id="matricula-error">{fields.matricula}</FieldError>
             </Field>
             <Field data-invalid={!!fields.password}>
@@ -57,7 +57,7 @@ export function LoginForm({ onLogin }: AuthFormProps) {
             </Field>
             <Field>
               <FieldError>{error}</FieldError>
-              <Button type="submit" disabled={pending} className="h-10 w-full text-sm">{pending ? "Iniciando sesión..." : "Iniciar sesión"}</Button>
+              <Button type="submit" disabled={pending} className="w-full">{pending ? "Iniciando sesión..." : "Iniciar sesión"}</Button>
               <FieldDescription className="text-center">¿No tienes una cuenta? <a href="/signup">Crear cuenta</a></FieldDescription>
             </Field>
           </FieldGroup>

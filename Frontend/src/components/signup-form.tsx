@@ -51,9 +51,9 @@ export function SignupForm({ onLogin }: AuthFormProps) {
   }
 
   return (
-    <Card className="border border-transparent [--card-spacing:--spacing(6)]">
+    <Card className="[--card-spacing:24px] max-md:[--card-spacing:20px] max-[359px]:[--card-spacing:16px]">
       <CardHeader className="gap-2 text-center">
-        <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">Crea tu cuenta</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-2xl/[1.25] font-medium tracking-[-0.035em]">Crea tu cuenta</CardTitle>
         <CardDescription>Comienza con tu cuenta de Kuby</CardDescription>
       </CardHeader>
       <CardContent>
@@ -62,18 +62,18 @@ export function SignupForm({ onLogin }: AuthFormProps) {
             <div className="grid gap-5 sm:grid-cols-2 sm:gap-4">
               <Field data-invalid={!!fields.nombre}>
                 <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
-                <Input id="nombre" name="nombre" autoComplete="given-name" maxLength={100} required disabled={pending} readOnly={created} aria-invalid={!!fields.nombre} aria-describedby={fields.nombre ? "nombre-error" : undefined} className="h-10 bg-background text-sm md:text-sm" />
+                <Input id="nombre" name="nombre" autoComplete="given-name" maxLength={100} required disabled={pending} readOnly={created} aria-invalid={!!fields.nombre} aria-describedby={fields.nombre ? "nombre-error" : undefined}  />
                 <FieldError id="nombre-error">{fields.nombre}</FieldError>
               </Field>
               <Field data-invalid={!!fields.apellido}>
                 <FieldLabel htmlFor="apellido">Apellido</FieldLabel>
-                <Input id="apellido" name="apellido" autoComplete="family-name" maxLength={100} required disabled={pending} readOnly={created} aria-invalid={!!fields.apellido} aria-describedby={fields.apellido ? "apellido-error" : undefined} className="h-10 bg-background text-sm md:text-sm" />
+                <Input id="apellido" name="apellido" autoComplete="family-name" maxLength={100} required disabled={pending} readOnly={created} aria-invalid={!!fields.apellido} aria-describedby={fields.apellido ? "apellido-error" : undefined}  />
                 <FieldError id="apellido-error">{fields.apellido}</FieldError>
               </Field>
             </div>
             <Field data-invalid={!!fields.matricula}>
               <FieldLabel htmlFor="matricula">Matrícula</FieldLabel>
-              <Input id="matricula" name="matricula" placeholder="A00000000" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={20} required disabled={pending} readOnly={created} aria-invalid={!!fields.matricula} aria-describedby={fields.matricula ? "matricula-error" : undefined} className="h-10 bg-background text-sm md:text-sm" />
+              <Input id="matricula" name="matricula" placeholder="A00000000" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={20} required disabled={pending} readOnly={created} aria-invalid={!!fields.matricula} aria-describedby={fields.matricula ? "matricula-error" : undefined}  />
               <FieldError id="matricula-error">{fields.matricula}</FieldError>
             </Field>
             <Field data-invalid={!!fields.password}>
@@ -88,9 +88,9 @@ export function SignupForm({ onLogin }: AuthFormProps) {
               <FieldError id="confirm-error">{fields.confirm}</FieldError>
             </Field>}
             <Field>
-              {created && <p role="status" className="text-xs text-muted-foreground">Tu cuenta se creó correctamente. Inicia sesión para continuar.</p>}
+              {created && <p role="status" className="text-[13px] text-muted-foreground">Tu cuenta se creó correctamente. Inicia sesión para continuar.</p>}
               <FieldError>{error}</FieldError>
-              <Button type="submit" disabled={pending} className="h-10 w-full text-sm">{pending ? (created ? "Iniciando sesión..." : "Creando cuenta...") : (created ? "Iniciar sesión" : "Crear cuenta")}</Button>
+              <Button type="submit" disabled={pending} className="w-full">{pending ? (created ? "Iniciando sesión..." : "Creando cuenta...") : (created ? "Iniciar sesión" : "Crear cuenta")}</Button>
               <FieldDescription className="text-center">¿Ya tienes una cuenta? <a href="/login">Iniciar sesión</a></FieldDescription>
             </Field>
           </FieldGroup>

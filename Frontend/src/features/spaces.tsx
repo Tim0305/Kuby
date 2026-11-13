@@ -135,7 +135,7 @@ export function Spaces({
       description="Encuentra un espacio para concentrarte o para tu próxima sesión en equipo."
       action={
         admin && (
-          <Button onClick={() => setEditor("new")}>
+          <Button onClick={() => setEditor("new")} className="w-full md:w-auto">
             <PlusIcon data-icon="inline-start" />
             Nuevo cubículo
           </Button>
@@ -150,31 +150,32 @@ export function Spaces({
           </CardContent>
         </Card>
       )}
-      <div className="space-grid">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))]">
         {resource.data?.map((space) => (
-          <Card key={space.id_espacio} className="space-card">
-            <CardHeader>
-              <div className="space-meta">
-                <span className="space-number">
+          <Card key={space.id_espacio} className="min-w-0 motion-safe:transition-colors motion-safe:duration-150 hover:border-input">
+            <CardHeader className="gap-1">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <span className="text-[13px] text-muted-foreground tabular-nums">
                   Cubículo {String(space.id_espacio).padStart(2, "0")}
                 </span>
                 <Status value={space.estado_espacio} />
               </div>
-              <CardTitle>{space.nombre_espacio}</CardTitle>
+              <CardTitle className="text-[22px]/[1.3] tracking-[-0.035em] wrap-anywhere">{space.nombre_espacio}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-facts">
-                <p className="flex items-center gap-2">
-                  <MapPinIcon />
+            <CardContent className="flex flex-1 flex-col justify-between gap-6">
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <p className="flex items-start gap-2">
+                  <MapPinIcon className="mt-px size-[18px] shrink-0" />
                   {space.ubicacion || "Ubicación no especificada"}
                 </p>
                 <p className="flex items-center gap-2">
-                  <UsersIcon />
+                  <UsersIcon className="mt-px size-[18px] shrink-0" />
                   Hasta {space.capacidad} {space.capacidad === 1 ? "persona" : "personas"}
                 </p>
               </div>
-              <div className="space-actions">
+              <div className="flex flex-wrap gap-2 border-t border-border pt-5">
                 <Button
+                  className="w-full md:w-auto"
                   disabled={space.estado_espacio !== "activo"}
                   onClick={() => setBooking(space)}
                 >
@@ -184,7 +185,7 @@ export function Spaces({
                 </Button>
                 {admin && (
                   <>
-                    <Button variant="outline" onClick={() => setEditor(space)}>
+                    <Button variant="outline" className="flex-1 md:flex-none" onClick={() => setEditor(space)}>
                       Editar
                     </Button>
                     {space.estado_espacio !== "inactivo" && (

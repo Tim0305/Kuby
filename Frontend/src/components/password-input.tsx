@@ -7,12 +7,12 @@ export function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type" |
   const [visible, setVisible] = useState(false)
   return (
     <div className="relative">
-      <Input {...props} type={visible ? "text" : "password"} className="h-10 bg-background pr-11 text-sm md:text-sm" />
+      <Input {...props} type={visible ? "text" : "password"} className="pr-11" />
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="absolute inset-y-0 right-0 h-full w-10 text-muted-foreground"
+        className="absolute inset-y-0 right-0 h-full w-11 p-0 text-muted-foreground"
         aria-label={`${visible ? "Ocultar" : "Mostrar"} ${props.id === "confirm-password" ? "confirmación de contraseña" : "contraseña"}`}
         aria-controls={props.id}
         aria-pressed={visible}

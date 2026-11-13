@@ -56,11 +56,11 @@ export function NavUser({
                   className="outline -outline-offset-1 outline-black/10 dark:outline-white/10"
                 />
               )}
-              <AvatarFallback>{initials}</AvatarFallback>
+              <AvatarFallback className="bg-sidebar-avatar text-sidebar-avatar-foreground">{initials}</AvatarFallback>
             </Avatar>
             <span className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate font-medium">{name}</span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate text-[13px] text-sidebar-muted-foreground">
                 {role}
               </span>
             </span>

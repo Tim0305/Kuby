@@ -81,9 +81,9 @@ function Navigation({
             <SidebarMenuButton
               render={<a href={admin ? "/admin" : "/"} />}
               tooltip="Kuby"
-              className="kuby-brand"
+              className="h-12 px-2 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:p-0"
             >
-              <SquaresFourIcon />
+              <SquaresFourIcon className="size-5 text-brand-icon" />
               <img
                 src="/assets/LogoKuby.png"
                 alt="Kuby"
@@ -110,6 +110,7 @@ function Navigation({
                     onClick={() => setOpenMobile(false)}
                   >
                     <item.icon
+                      className="size-5"
                       weight={active === item.href ? "fill" : "regular"}
                     />
                     <span>{item.title}</span>
@@ -175,17 +176,17 @@ export function AppLayout({
 
   return (
     <TooltipProvider>
-      <a className="kuby-skip-link" href="#main-content">Ir al contenido</a>
-      <SidebarProvider className="kuby-shell">
+      <a className="sr-only fixed top-3 left-3 z-100 rounded-(--control-radius) bg-primary px-5 py-3 text-sm text-primary-foreground focus:not-sr-only focus:fixed" href="#main-content">Ir al contenido</a>
+      <SidebarProvider>
         <Navigation admin={admin} account={account} />
         <SidebarInset className="min-w-0" id="main-content" tabIndex={-1}>
-          <header className="workspace-topbar">
+          <header className="flex h-14 items-center gap-3 border-b border-border bg-card px-5 md:h-16 md:px-[clamp(20px,3vw,48px)]">
             <WorkspaceSidebarTrigger />
-            <span className="topbar-divider" aria-hidden="true" />
-            <span className="topbar-title">
+            <span className="h-5 w-px bg-border" aria-hidden="true" />
+            <span className="text-sm font-medium">
               {admin ? "Administración" : "Mi Kuby"}
             </span>
-            <span className="topbar-context">Reservaciones y acceso al campus</span>
+            <span className="ml-auto hidden text-[13px] text-muted-foreground md:block">Reservaciones y acceso al campus</span>
           </header>
           {logoutError && (
             <p

@@ -151,7 +151,7 @@ export function AccessHistory({
       </Card>
       <RemoteState {...history} />
       {history.data && (
-        <Card>
+        <Card className="gap-0 py-0">
           <Table>
             <TableHeader>
               <TableRow>

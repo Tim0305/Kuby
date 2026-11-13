@@ -39,15 +39,15 @@ export function Section({
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="dashboard-section"
+      className="flex min-w-0 scroll-mt-6 flex-col gap-5"
     >
-      <header className="section-heading">
-        <div className="section-copy">
-          <h2 id={`${id}-title`}>
+      <header className="flex flex-wrap items-start justify-between gap-3 md:items-end md:gap-4">
+        <div className="basis-full md:flex-[1_1_280px]">
+          <h2 id={`${id}-title`} className="mb-1.5 text-[23px]/[1.25] font-medium tracking-[-0.035em] md:text-2xl">
             {title}
           </h2>
           {description && (
-            <p>{description}</p>
+            <p className="max-w-[74ch] text-sm/[1.6] text-muted-foreground">{description}</p>
           )}
         </div>
         {action}
@@ -96,7 +96,7 @@ export function RefreshButton({
   loading: boolean
 }) {
   return (
-    <Button variant="outline" onClick={reload} disabled={loading}>
+          <Button variant="outline" onClick={reload} disabled={loading} className="w-full md:w-auto">
       <ArrowClockwiseIcon data-icon="inline-start" />
       Actualizar
     </Button>
@@ -119,10 +119,13 @@ export function Status({ value }: { value: string }) {
   return (
     <Badge
       data-status={value}
+      className="before:size-[5px] before:shrink-0 before:rounded-full before:bg-current before:content-['']"
       variant={
-        value === "denegado" || value === "inactivo" || value === "cancelada"
-          ? "outline"
-          : "secondary"
+        ["activo", "activa", "permitido"].includes(value) ? "positive"
+          : value === "creada" ? "upcoming"
+          : ["mantenimiento", "liberada"].includes(value) ? "caution"
+          : ["inactivo", "cancelada", "denegado"].includes(value) ? "negative"
+          : value === "finalizada" ? "neutral" : "secondary"
       }
     >
       {statusNames[value] ?? value}
@@ -144,7 +147,7 @@ export function FormField({
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       {cloneElement(children, { id })}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[13px] text-muted-foreground">{hint}</p>}
     </Field>
   )
 }
@@ -179,7 +182,7 @@ export function Choice({
       <SelectTrigger
         id={id}
         aria-label={label}
-        className="h-10 w-full bg-background text-sm"
+        className="w-full"
       >
         <SelectValue
           placeholder={options.find((option) => option.value === value)?.label ?? label}
@@ -307,17 +310,19 @@ export function ConfirmAction({
   label,
   description,
   action,
-  onDone
+  onDone,
+  size = "default"
 }: {
   label: string
   description: string
   action: () => Promise<void>
   onDone: () => void
+  size?: "default" | "sm"
 }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button size={size} variant="outline" onClick={() => setOpen(true)}>
         {label}
       </Button>
       {open && (

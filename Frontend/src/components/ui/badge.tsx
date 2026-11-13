@@ -5,10 +5,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-none border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-sm border border-transparent px-2 py-1 text-[13px]/[1.3] font-medium whitespace-normal transition-[background-color,border-color,color] duration-150 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
+        positive: "border-status-positive-border bg-status-positive text-status-positive-foreground",
+        upcoming: "border-status-upcoming-border bg-status-upcoming text-status-upcoming-foreground",
+        caution: "border-status-caution-border bg-status-caution text-status-caution-foreground",
+        negative: "border-status-negative-border bg-status-negative text-status-negative-foreground",
+        neutral: "border-status-neutral-border bg-status-neutral text-status-neutral-foreground",
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",

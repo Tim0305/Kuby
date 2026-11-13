@@ -58,19 +58,19 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
   return (
     <div className="space-y-4">
       <RemoteState {...state} />
-      <div className="sensor-summary">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:gap-4">
         {sensors.map((sensor) => {
           const reading = state.data?.find((row) => row.tipo_sensor === sensor)
           return (
-            <Card key={sensor}>
+            <Card key={sensor} className="gap-2 [--card-spacing:16px] md:gap-3 xl:[--card-spacing:24px]">
               <CardHeader>
-                <CardTitle>{sensorLabels[sensor].label}</CardTitle>
+                <CardTitle className="text-[13px] text-muted-foreground">{sensorLabels[sensor].label}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className={`sensor-value${sensor === "proximidad" ? " sensor-value--presence" : ""}`}>
+              <CardContent className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 md:block md:space-y-2">
+                <p className={`font-medium leading-[1.3] tabular-nums ${sensor === "proximidad" ? "text-xl tracking-[-0.025em]" : "text-[28px] tracking-[-0.04em] md:text-[clamp(22px,2.3vw,30px)]"}`}>
                   {reading ? readingValue(sensor, reading.valor) : "—"}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                   {reading ? (
                     <LocalTime value={reading.registrado_en} />
                   ) : (
@@ -86,7 +86,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle>Lecturas recientes</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Últimas 50 lecturas · Se actualizan cada minuto mientras esta pestaña está visible.
             </p>
           </div>
@@ -110,8 +110,8 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
             </p>
           )}
           {points.length > 0 && (
-            <div className="sensor-history">
-              <div className="sensor-chart">
+            <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:items-start">
+              <div className="min-w-0 xl:sticky xl:top-6">
                 <ChartContainer
                   config={{
                     valor: {
@@ -164,6 +164,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                   </LineChart>
                 </ChartContainer>
               </div>
+              <div className="overflow-hidden rounded-(--control-radius) border border-border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -176,16 +177,17 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                 <TableBody>
                   {readings.data?.slice(0, 10).map((row) => (
                     <TableRow key={row.id}>
-                      <TableCell>
+                      <TableCell className="py-2.5">
                         <LocalTime value={row.fecha} />
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="py-2.5 text-right tabular-nums">
                         {readingValue(sensor, row.valor)}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </div>
           )}
         </CardContent>
@@ -206,7 +208,7 @@ export function Sensors({ spaces }: { spaces: Espacio[] }) {
       description="Las mediciones muestran las últimas condiciones reportadas, independientemente de la disponibilidad para reservar."
       action={
         spaces.length > 0 && (
-          <div className="w-56">
+          <div className="w-full md:w-56">
             <Choice
               label="Cubículo para consultar lecturas"
               value={String(spaceId)}

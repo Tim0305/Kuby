@@ -137,7 +137,7 @@ export function Users({
       title="Usuarios"
       description="Administra los accesos y los roles de las cuentas."
       action={
-        <div className="w-44">
+        <div className="w-full md:w-44">
           <Choice
             label="Filtrar usuarios por estado"
             value={status}
@@ -153,7 +153,7 @@ export function Users({
     >
       <RemoteState {...users} />
       {users.data && (
-        <Card>
+        <Card className="gap-0 py-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -180,7 +180,7 @@ export function Users({
                   <TableCell className="font-medium">
                     {user.nombre} {user.apellido}
                     {user.id_usuario === currentUserId && (
-                      <span className="ml-2 text-xs text-muted-foreground">
+                      <span className="ml-2 text-[13px] text-muted-foreground">
                         Tú
                       </span>
                     )}
@@ -194,6 +194,7 @@ export function Users({
                     <div className="flex justify-end gap-2">
                       {user.id_usuario === currentUserId ? (
                         <Button
+                          size="sm"
                           variant="outline"
                           nativeButton={false}
                           role="link"
@@ -204,6 +205,7 @@ export function Users({
                       ) : (
                         <>
                           <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => setEditing(user)}
                           >
@@ -211,6 +213,7 @@ export function Users({
                           </Button>
                           {user.estatus === "activo" && (
                             <ConfirmAction
+                              size="sm"
                               label="Desactivar usuario"
                               description={`¿Quieres desactivar a ${user.nombre} ${user.apellido}? Perderá el acceso y se cerrará su sesión actual.`}
                               action={() => deactivateUser(user.id_usuario)}

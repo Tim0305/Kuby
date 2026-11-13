@@ -19,7 +19,7 @@ import { ActionForm, ConfirmAction, FormField, Section, text } from "@/features/
 // Keep the native file picker while giving its visible controls Spanish text.
 function PhotoInput({ fileName, ...props }: ComponentProps<typeof Input> & { fileName: string }) {
   return (
-    <div className="photo-input relative flex h-10 min-w-0 items-center gap-2 border border-input bg-background px-2.5 text-xs focus-within:outline-2 focus-within:outline-ring">
+    <div className="min-h-11 rounded-(--control-radius) text-[13px] relative flex h-10 min-w-0 items-center gap-2 border border-input bg-background px-2.5 text-[13px] focus-within:outline-2 focus-within:outline-ring">
       <Input {...props} type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
       <span aria-hidden="true" className="shrink-0 bg-muted px-2 py-1 font-medium">Seleccionar archivo</span>
       <span aria-hidden="true" className="min-w-0 truncate text-muted-foreground">{fileName || "Ningún archivo seleccionado"}</span>
@@ -42,9 +42,9 @@ export function Profile({
       title="Mi perfil"
       description={`${user.matricula} · ${user.rol === "admin" ? "Administrador" : "Cuenta de usuario"}`}
     >
-      <div className="profile-grid">
+      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b border-border pb-5">
             <CardTitle>Datos personales</CardTitle>
           </CardHeader>
           <CardContent>
@@ -81,7 +81,7 @@ export function Profile({
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b border-border pb-5">
             <CardTitle>Cambiar contraseña</CardTitle>
           </CardHeader>
           <CardContent>
@@ -131,8 +131,8 @@ export function Profile({
             </ActionForm>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
+        <Card className="md:col-span-2 xl:col-span-1">
+          <CardHeader className="border-b border-border pb-5">
             <CardTitle>Foto de perfil</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

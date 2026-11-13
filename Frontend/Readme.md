@@ -22,9 +22,9 @@ The authentication pages adapt the shadcn `login-03` and `signup-03` blocks to K
 
 ## Application styling
 
-`src/index.css` is the single application stylesheet, imported once by `src/main.tsx`. It contains the local fonts, light/dark theme tokens, Tailwind v4 bindings, shared component surfaces, dashboard and authentication layouts, responsive rules, and accessibility states.
+`src/index.css` is imported once by `src/main.tsx` and contains only local fonts, light/dark theme tokens, Tailwind v4 bindings, and base/accessibility styles. Keep its existing design values intact.
 
-Add shared colours, status palettes, and radii to the theme tokens first. Keep feature rules in their labelled sections and breakpoint overrides in the responsive section. Style existing Base UI components through their data slots; keep layout utilities in React and component behavior in the existing primitives. Login, signup, session feedback, and both dashboards share this style system. No external theme-preview script is loaded.
+Use Tailwind utilities in JSX for layout, spacing, typography, colours, and responsive breakpoints. Change shared defaults directly in `src/components/ui` or pass `className`; use theme tokens rather than hardcoded colours. Do not add structural selectors, component overrides, `!important`, comments, or feature sections to the stylesheet. Reserve custom CSS classes for styles repeated in at least three places, with one class selector and about five declarations at most. Login, signup, session feedback, and both dashboards share this style system.
 
 ## Workspace features
 

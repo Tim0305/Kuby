@@ -76,20 +76,20 @@ export default function App({ user: initialUser }: { user: Usuario }) {
     <AppLayout admin={admin} user={user} avatarVersion={profileVersion}>
       <div
         id="overview"
-        className="workspace min-w-0 flex-1"
+        className="px-5 pt-7 pb-12 text-left md:px-[clamp(20px,3vw,48px)] md:pt-9 md:pb-16 max-[359px]:px-4 min-w-0 flex-1"
       >
-        <div className="workspace-content">
-          <header className="workspace-heading">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 md:gap-9">
+          <header className="flex flex-wrap items-center justify-between gap-5 md:gap-6">
             <div>
-              <p className="workspace-eyebrow">
+              <p className="mb-2 flex items-center gap-2 text-[13px] font-medium text-muted-foreground before:size-1.5 before:rounded-full before:bg-primary before:content-['']">
                 {admin ? "Kuby / Administración" : "Tu espacio de trabajo en el campus"}
               </p>
-              <h1>
+              <h1 className="max-w-[18ch] text-[32px]/[1.15] font-medium tracking-[-0.045em] text-balance md:max-w-none md:text-[clamp(30px,2.75vw,42px)] max-[359px]:text-[29px]">
                 {admin
                   ? "Un espacio para cada idea."
                   : "Hola, " + user.nombre + "."}
               </h1>
-              <p>
+              <p className="mt-2.5 max-w-[62ch] text-sm/[1.6] text-muted-foreground md:mt-3 md:text-[15px]">
                 {admin
                   ? "Administra los espacios, las personas y sus visitas."
                   : "Concéntrate en lo que importa. Reserva un cubículo para tu próxima sesión."}
@@ -99,6 +99,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               nativeButton={false}
               render={<a href={admin ? "#reservations" : "#spaces"} />}
               variant="outline"
+              className="w-full md:w-auto"
             >
               {admin ? "Ver reservaciones" : "Explorar cubículos"}
               <ArrowUpRightIcon data-icon="inline-end" />
@@ -107,7 +108,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
           {notice && (
             <p
               role="status"
-              className="workspace-notice"
+              className="rounded-md border border-border border-l-[3px] border-l-primary bg-card px-5 py-3.5 text-sm"
             >
               {notice}
             </p>
@@ -117,21 +118,21 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               <RemoteState {...summary} />
               {summary.data && (
                 <div
-                  className="summary-grid"
+                  className="grid grid-cols-2 overflow-hidden rounded-(--surface-radius) border border-border bg-card lg:grid-cols-4"
                   aria-label="Totales de administración"
                 >
-                  {Object.entries(summary.data).map(([key, value]) => {
+                  {Object.entries(summary.data).map(([key, value], index) => {
                     const Icon = summaryIcons[key as keyof typeof summaryIcons]
                     return (
-                      <Card key={key}>
+                      <Card key={key} className={`gap-2.5 rounded-none border-0 bg-transparent py-[18px] [--card-spacing:16px] md:py-5 md:[--card-spacing:24px] ${index > 1 ? "border-t lg:border-t-0" : ""} ${index % 2 === 1 ? "border-l" : ""} ${index === 2 ? "lg:border-l" : ""}`}>
                         <CardHeader>
-                          <CardTitle>
+                          <CardTitle className="flex items-center justify-between gap-3 text-[13px] text-muted-foreground">
                             {summaryLabels[key]}
-                            {Icon && <Icon aria-hidden="true" />}
+                            {Icon && <Icon aria-hidden="true" className="hidden size-[18px] text-muted-foreground md:block" />}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="summary-value">
+                          <p className="text-3xl/[1.15] font-medium tracking-[-0.055em] tabular-nums md:text-[32px]">
                             {formatNumber(value)}
                           </p>
                         </CardContent>
