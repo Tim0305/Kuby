@@ -13,7 +13,7 @@ export function PasswordInput(props: Omit<ComponentProps<typeof Input>, "type" |
         variant="ghost"
         size="icon"
         className="absolute inset-y-0 right-0 h-full w-10 text-muted-foreground"
-        aria-label={`${visible ? "Hide" : "Show"} ${props.id === "confirm-password" ? "password confirmation" : "password"}`}
+        aria-label={`${visible ? "Ocultar" : "Mostrar"} ${props.id === "confirm-password" ? "confirmación de contraseña" : "contraseña"}`}
         aria-controls={props.id}
         aria-pressed={visible}
         disabled={props.disabled}

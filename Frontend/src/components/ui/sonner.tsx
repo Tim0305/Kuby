@@ -15,6 +15,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      containerAriaLabel="Notificaciones"
+      customAriaLabel="Notificación"
       icons={{
         success: (
           <CheckCircleIcon className="size-4" />
@@ -41,6 +43,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       toastOptions={{
+        closeButtonAriaLabel: "Cerrar notificación",
         classNames: {
           toast: "cn-toast",
         },

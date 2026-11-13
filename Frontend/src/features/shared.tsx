@@ -1,6 +1,7 @@
 import { cloneElement, useId, useRef, useState } from "react"
 import type { ReactElement, ReactNode } from "react"
 import { ArrowClockwiseIcon } from "@phosphor-icons/react"
+import { fieldLabel, formatDateTime } from "@/lib/locale"
 import { ApiError } from "@/lib/api"
 import {
   Badge,
@@ -73,14 +74,14 @@ export function RemoteState({
       >
         <p>{error.message}</p>
         <Button variant="outline" onClick={reload}>
-          Try again
+          Reintentar
         </Button>
       </div>
     )
   if (loading)
     return (
       <div role="status" className="space-y-2">
-        <span className="sr-only">Loading…</span>
+        <span className="sr-only">Cargando…</span>
         <Skeleton className="h-2 w-full" />
       </div>
     )
@@ -97,22 +98,22 @@ export function RefreshButton({
   return (
     <Button variant="outline" onClick={reload} disabled={loading}>
       <ArrowClockwiseIcon data-icon="inline-start" />
-      Refresh
+      Actualizar
     </Button>
   )
 }
 
 const statusNames: Record<string, string> = {
-  creada: "Upcoming",
-  activa: "In use",
-  finalizada: "Completed",
-  liberada: "Released (no check-in)",
-  cancelada: "Cancelled",
-  activo: "Active",
-  inactivo: "Inactive",
-  mantenimiento: "Maintenance",
-  permitido: "Allowed",
-  denegado: "Denied"
+  creada: "Próxima",
+  activa: "En uso",
+  finalizada: "Finalizada",
+  liberada: "Liberada (sin registro de entrada)",
+  cancelada: "Cancelada",
+  activo: "Activo",
+  inactivo: "Inactivo",
+  mantenimiento: "Mantenimiento",
+  permitido: "Permitido",
+  denegado: "Denegado"
 }
 export function Status({ value }: { value: string }) {
   return (
@@ -195,7 +196,7 @@ export function Choice({
 export function ActionForm({
   action,
   children,
-  submit = "Save changes",
+  submit = "Guardar cambios",
   success,
   onDone,
   destructive = false,
@@ -236,7 +237,7 @@ export function ActionForm({
           setError(
             error instanceof Error
               ? error.message
-              : "Could not save. Please try again."
+              : "No se pudo guardar. Inténtalo de nuevo."
           )
           if (error instanceof ApiError) setFields(error.fields)
         } finally {
@@ -250,7 +251,7 @@ export function ActionForm({
         {error && <FieldError>{error}</FieldError>}
         {Object.entries(fields).map(([field, message]) => (
           <FieldError key={field}>
-            {field}: {message}
+            {fieldLabel(field)}: {message}
           </FieldError>
         ))}
         {saved && success && (
@@ -263,7 +264,7 @@ export function ActionForm({
           variant={destructive ? "destructive" : "default"}
           disabled={pending}
         >
-          {pending ? "Saving…" : submit}
+          {pending ? "Guardando…" : submit}
         </Button>
       </fieldset>
     </form>
@@ -340,10 +341,7 @@ export function ConfirmAction({
 export function LocalTime({ value }: { value: string }) {
   return (
     <time dateTime={value} className="whitespace-nowrap">
-      {new Date(value).toLocaleString([], {
-        dateStyle: "medium",
-        timeStyle: "short"
-      })}
+      {formatDateTime(value)}
     </time>
   )
 }

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { es } from "react-day-picker/locale"
 import { cn } from "cn"
 import {
   DayPicker,
@@ -18,7 +19,7 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
-  locale,
+  locale = es,
   formatters,
   components,
   ...props
@@ -184,7 +185,7 @@ function CalendarDayButton({
   className,
   day,
   modifiers,
-  locale,
+  locale = es,
   ...props
 }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
   const defaultClassNames = getDefaultClassNames()

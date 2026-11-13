@@ -49,7 +49,7 @@ export default function AppRoot() {
             message:
               error instanceof Error
                 ? error.message
-                : "Could not check your session. Please try again."
+                : "No se pudo verificar tu sesión. Inténtalo de nuevo."
           })
         }
       }
@@ -66,7 +66,7 @@ export default function AppRoot() {
           role="status"
           className="py-8 text-center text-sm text-muted-foreground"
         >
-          Checking your session...
+          Verificando tu sesión...
         </p>
       </AuthShell>
     )
@@ -77,7 +77,7 @@ export default function AppRoot() {
       <AuthShell>
         <Card>
           <CardHeader>
-            <CardTitle>Unable to connect</CardTitle>
+            <CardTitle>No se pudo conectar</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p role="alert" className="text-sm">
@@ -90,7 +90,7 @@ export default function AppRoot() {
                 setAttempt((value) => value + 1)
               }}
             >
-              Try again
+              Reintentar
             </Button>
           </CardContent>
         </Card>
@@ -114,7 +114,7 @@ export default function AppRoot() {
             role="status"
             className="py-8 text-center text-sm text-muted-foreground"
           >
-            Loading your workspace…
+            Cargando tu espacio de trabajo…
           </p>
         </AuthShell>
       }

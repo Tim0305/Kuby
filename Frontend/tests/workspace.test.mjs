@@ -116,7 +116,7 @@ const api = createHttpServer(async (req, res) => {
       res.writeHead(status, { "Content-Type": "application/json" })
       res.end(status === 204 ? undefined : JSON.stringify(body))
     }
-    if (fixture.expired) return send({ error: "Session expired" }, 401)
+    if (fixture.expired) return send({ error: "Sesión inválida o expirada" }, 401)
     if (route === "/auth/me")
       return send(fixture.users.find((user) => user.id_usuario === userId))
     if (route === "/resumen")
@@ -127,7 +127,7 @@ const api = createHttpServer(async (req, res) => {
             reservaciones: fixture.reservations.length,
             accesos: fixture.accesses.length
           })
-        : send({ error: "Forbidden" }, 403)
+        : send({ error: "Sin permisos" }, 403)
     if (route === "/reservaciones/actual")
       return send(
         fixture.reservations.find(
@@ -279,7 +279,7 @@ const api = createHttpServer(async (req, res) => {
       user.rol = user.id_rol === 1 ? "admin" : "usuario"
       return send(user)
     }
-    send({ error: "Fixture endpoint not implemented" }, 404)
+    send({ error: "Servicio de prueba no disponible" }, 404)
   } catch (error) {
     res.writeHead(500)
     res.end(String(error))
@@ -319,6 +319,7 @@ async function openPage(
   const context = await browser.newContext({
     viewport,
     timezoneId: "America/Mexico_City",
+    locale: "en-US",
     reducedMotion: "reduce"
   })
   if (admin)
@@ -331,7 +332,7 @@ async function openPage(
   await page.goto(origin + (admin ? "admin" : ""))
   await expect(
     page.getByRole("heading", {
-      name: admin ? "A little room for everything." : "Welcome back, Sam."
+      name: admin ? "Un espacio para cada idea." : "Hola, Sam."
     })
   ).toBeVisible()
   return { page, context, errors }
@@ -343,33 +344,39 @@ test(
   async () => {
     const { page, context, errors } = await openPage()
     try {
+      await expect(page.locator("html")).toHaveAttribute("lang", "es-MX")
+      await expect(page.locator("#reservations time").first()).toHaveText(
+        new Date(stamp).toLocaleString("es-MX", {
+          dateStyle: "medium", timeStyle: "short", timeZone: "America/Mexico_City"
+        })
+      )
       await expect(
-        page.getByRole("link", { name: "Users", exact: true })
+        page.getByRole("link", { name: "Usuarios", exact: true })
       ).toHaveCount(0)
       await expect(
-        page.getByRole("button", { name: "Unavailable", exact: true })
+        page.getByRole("button", { name: "No disponible", exact: true })
       ).toBeDisabled()
       await page
-        .getByRole("button", { name: "Reserve cubicle", exact: true })
+        .getByRole("button", { name: "Reservar cubículo", exact: true })
         .click()
       const dialog = page.getByRole("dialog")
       await dialog
-        .getByLabel("Start time", { exact: true })
+        .getByLabel("Hora de inicio", { exact: true })
         .fill("2035-11-16T10:00")
       await dialog
-        .getByLabel("End time", { exact: true })
+        .getByLabel("Hora de fin", { exact: true })
         .fill("2035-11-16T11:00")
       fixture.conflict = true
       await dialog
-        .getByRole("button", { name: "Confirm reservation", exact: true })
+        .getByRole("button", { name: "Confirmar reservación", exact: true })
         .click()
       await expect(dialog.getByRole("alert")).toContainText("empalma")
       await expect(
-        dialog.getByLabel("Start time", { exact: true })
+        dialog.getByLabel("Hora de inicio", { exact: true })
       ).toHaveValue("2035-11-16T10:00")
       fixture.conflict = false
       await dialog
-        .getByRole("button", { name: "Confirm reservation", exact: true })
+        .getByRole("button", { name: "Confirmar reservación", exact: true })
         .click()
       await expect(dialog).toHaveCount(0)
       await expect(page.locator("#reservations tbody tr")).toHaveCount(6)
@@ -396,42 +403,42 @@ test(
     try {
       const table = page.locator("#reservations")
       await expect(
-        table.getByRole("button", { name: "Reschedule", exact: true })
+        table.getByRole("button", { name: "Reprogramar", exact: true })
       ).toHaveCount(1)
       await expect(
-        table.getByRole("button", { name: "Cancel reservation", exact: true })
+        table.getByRole("button", { name: "Cancelar reservación", exact: true })
       ).toHaveCount(2)
       await table
-        .getByRole("button", { name: "Reschedule", exact: true })
+        .getByRole("button", { name: "Reprogramar", exact: true })
         .click()
       let dialog = page.getByRole("dialog")
       await dialog
-        .getByLabel("End time", { exact: true })
+        .getByLabel("Hora de fin", { exact: true })
         .fill("2035-11-15T09:00")
       await dialog
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(dialog.getByRole("alert")).toContainText("after start")
+      await expect(dialog.getByRole("alert")).toContainText("posterior a la hora de inicio")
       await dialog
-        .getByLabel("End time", { exact: true })
+        .getByLabel("Hora de fin", { exact: true })
         .fill("2035-11-15T12:00")
       await dialog
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
       await expect(dialog).toHaveCount(0)
       assert.equal(fixture.reservations[0].hora_fin, "2035-11-15T18:00:00.000Z")
       await table
         .getByRole("row")
-        .filter({ hasText: "Upcoming" })
-        .getByRole("button", { name: "Cancel reservation", exact: true })
+        .filter({ hasText: "Próxima" })
+        .getByRole("button", { name: "Cancelar reservación", exact: true })
         .click()
       dialog = page.getByRole("dialog")
       await dialog
-        .getByRole("button", { name: "Cancel reservation", exact: true })
+        .getByRole("button", { name: "Cancelar reservación", exact: true })
         .click()
       await expect(dialog).toHaveCount(0)
       await expect(
-        table.getByRole("button", { name: "Reschedule", exact: true })
+        table.getByRole("button", { name: "Reprogramar", exact: true })
       ).toHaveCount(0)
       assert.equal(fixture.reservations[0].estado_reservacion, "cancelada")
     } finally {
@@ -446,90 +453,94 @@ test(
   async () => {
     const { page, context, errors } = await openPage(true)
     try {
-      await expect(page.getByLabel("Administration totals")).toContainText(
-        "Access attempts"
+      await expect(page.getByLabel("Totales de administración")).toContainText(
+        "Intentos de acceso"
       )
       await page.screenshot({ path: screenshotDirectory + "admin-desktop.png" })
       await page
-        .getByRole("button", { name: "New cubicle", exact: true })
+        .getByRole("button", { name: "Nuevo cubículo", exact: true })
         .click()
       let dialog = page.getByRole("dialog")
-      await dialog.getByLabel("Name", { exact: true }).fill("Team nook")
-      await dialog.getByLabel("Capacity", { exact: true }).fill("6")
+      await dialog.getByLabel("Nombre", { exact: true }).fill("Team nook")
+      await dialog.getByLabel("Capacidad", { exact: true }).fill("0")
+      await dialog.getByRole("button", { name: "Crear cubículo", exact: true }).click()
+      assert.equal(await dialog.getByLabel("Capacidad", { exact: true }).evaluate(input => input.validationMessage), "El valor mínimo es 1.")
+      assert.equal(requests.filter(r => r.route === "/espacios" && r.method === "POST").length, 0)
+      await dialog.getByLabel("Capacidad", { exact: true }).fill("6")
       await dialog
-        .getByRole("button", { name: "Create cubicle", exact: true })
+        .getByRole("button", { name: "Crear cubículo", exact: true })
         .click()
       await expect(dialog).toHaveCount(0)
       const nook = page
         .locator("#spaces [data-slot=card]")
         .filter({ hasText: "Team nook" })
-      await expect(nook).toContainText("Up to 6 people")
+      await expect(nook).toContainText("Hasta 6 personas")
       await nook
-        .getByRole("button", { name: "Deactivate", exact: true })
+        .getByRole("button", { name: "Desactivar", exact: true })
         .click()
       await page
         .getByRole("dialog")
-        .getByRole("button", { name: "Deactivate", exact: true })
+        .getByRole("button", { name: "Desactivar", exact: true })
         .click()
       await expect(
-        nook.getByRole("button", { name: "Unavailable", exact: true })
+        nook.getByRole("button", { name: "No disponible", exact: true })
       ).toBeDisabled()
-      await nook.getByRole("button", { name: "Edit", exact: true }).click()
+      await nook.getByRole("button", { name: "Editar", exact: true }).click()
       dialog = page.getByRole("dialog")
       await dialog
-        .getByRole("combobox", { name: "Cubicle status", exact: true })
+        .getByRole("combobox", { name: "Estado del cubículo", exact: true })
         .click()
-      await page.getByRole("option", { name: "Active", exact: true }).click()
+      await page.getByRole("option", { name: "Activo", exact: true }).click()
       await dialog
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
       await expect(
-        nook.getByRole("button", { name: "Reserve cubicle", exact: true })
+        nook.getByRole("button", { name: "Reservar cubículo", exact: true })
       ).toBeEnabled()
       const accounts = page.locator("#users")
       const own = accounts.getByRole("row").filter({ hasText: "Alex Admin" })
       await expect(
-        own.getByRole("link", { name: "Edit my profile", exact: true })
+        own.getByRole("link", { name: "Editar mi perfil", exact: true })
       ).toBeVisible()
       await expect(
-        own.getByRole("button", { name: "Deactivate user", exact: true })
+        own.getByRole("button", { name: "Desactivar usuario", exact: true })
       ).toHaveCount(0)
       let student = accounts.getByRole("row").filter({ hasText: "Sam Student" })
-      await student.getByRole("button", { name: "Edit", exact: true }).click()
+      await student.getByRole("button", { name: "Editar", exact: true }).click()
       dialog = page.getByRole("dialog")
-      await dialog.getByRole("combobox", { name: "Role", exact: true }).click()
+      await dialog.getByRole("combobox", { name: "Rol", exact: true }).click()
       await page
-        .getByRole("option", { name: "Administrator", exact: true })
+        .getByRole("option", { name: "Administrador", exact: true })
         .click()
       await dialog
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(student).toContainText("admin")
+      await expect(student).toContainText("Administrador")
       assert.equal(fixture.users[1].id_rol, 1)
       await student
-        .getByRole("button", { name: "Deactivate user", exact: true })
+        .getByRole("button", { name: "Desactivar usuario", exact: true })
         .click()
       await page
         .getByRole("dialog")
-        .getByRole("button", { name: "Deactivate user", exact: true })
+        .getByRole("button", { name: "Desactivar usuario", exact: true })
         .click()
-      await expect(student).toContainText("Inactive")
+      await expect(student).toContainText("Inactivo")
       await page
-        .getByRole("combobox", { name: "Filter users by status", exact: true })
+        .getByRole("combobox", { name: "Filtrar usuarios por estado", exact: true })
         .click()
-      await page.getByRole("option", { name: "Inactive", exact: true }).click()
+      await page.getByRole("option", { name: "Inactivo", exact: true }).click()
       await expect(accounts.locator("tbody tr")).toHaveCount(1)
       student = accounts.getByRole("row").filter({ hasText: "Sam Student" })
-      await student.getByRole("button", { name: "Edit", exact: true }).click()
+      await student.getByRole("button", { name: "Editar", exact: true }).click()
       dialog = page.getByRole("dialog")
       await dialog
-        .getByRole("combobox", { name: "User status", exact: true })
+        .getByRole("combobox", { name: "Estado del usuario", exact: true })
         .click()
-      await page.getByRole("option", { name: "Active", exact: true }).click()
+      await page.getByRole("option", { name: "Activo", exact: true }).click()
       await dialog
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
-      await expect(accounts).toContainText("No users match this filter.")
+      await expect(accounts).toContainText("No hay usuarios que coincidan con este filtro.")
       assert.equal(fixture.users[1].estatus, "activo")
       assert.deepEqual(errors, [])
     } finally {
@@ -553,18 +564,18 @@ test(
       const conditions = page.locator("#sensors")
       await expect(conditions).toContainText("24.5 °C")
       await page
-        .getByRole("button", { name: "Toggle Sidebar", exact: true })
+        .getByRole("button", { name: "Alternar barra lateral", exact: true })
         .click()
       const navigation = page.getByRole("dialog")
       await expect(navigation).toBeVisible()
       await navigation
-        .getByRole("link", { name: "Conditions", exact: true })
+        .getByRole("link", { name: "Condiciones", exact: true })
         .click()
       await expect(navigation).toHaveCount(0)
       await expect(page).toHaveURL(origin + "#sensors")
       await page
         .getByRole("combobox", {
-          name: "Cubicle for sensor readings",
+          name: "Cubículo para consultar lecturas",
           exact: true
         })
         .click()
@@ -572,11 +583,11 @@ test(
         .getByRole("option", { name: "Library Two", exact: true })
         .click()
       await expect(conditions).toContainText(
-        "No temperature readings for this cubicle yet."
+        "Aún no hay lecturas de temperatura para este cubículo."
       )
       await page
         .getByRole("combobox", {
-          name: "Cubicle for sensor readings",
+          name: "Cubículo para consultar lecturas",
           exact: true
         })
         .click()
@@ -584,32 +595,32 @@ test(
         .getByRole("option", { name: "Library One", exact: true })
         .click()
       await page
-        .getByRole("combobox", { name: "Sensor history", exact: true })
+        .getByRole("combobox", { name: "Historial del sensor", exact: true })
         .click()
-      await page.getByRole("option", { name: "Humidity", exact: true }).click()
+      await page.getByRole("option", { name: "Humedad", exact: true }).click()
       await expect(conditions.locator("tbody")).toContainText("%")
       const history = page.locator("#access")
       await history
-        .getByRole("combobox", { name: "Filter access by result", exact: true })
+        .getByRole("combobox", { name: "Filtrar accesos por resultado", exact: true })
         .click()
-      await page.getByRole("option", { name: "Denied", exact: true }).click()
+      await page.getByRole("option", { name: "Denegado", exact: true }).click()
       await history
-        .getByRole("button", { name: "Apply filters", exact: true })
+        .getByRole("button", { name: "Aplicar filtros", exact: true })
         .click()
       await expect(history.locator("tbody tr")).toHaveCount(1)
-      await expect(history).toContainText("No reservation at this time")
+      await expect(history).toContainText("No hay una reservación vigente")
       await history
-        .getByRole("combobox", { name: "Filter access by result", exact: true })
+        .getByRole("combobox", { name: "Filtrar accesos por resultado", exact: true })
         .click()
       await page
-        .getByRole("option", { name: "All results", exact: true })
+        .getByRole("option", { name: "Todos los resultados", exact: true })
         .click()
       await history
-        .getByRole("button", { name: "Apply filters", exact: true })
+        .getByRole("button", { name: "Aplicar filtros", exact: true })
         .click()
       await expect(history.locator("tbody tr")).toHaveCount(20)
-      await history.getByRole("button", { name: "Next", exact: true }).click()
-      await expect(history).toContainText("Page 2 of 2")
+      await history.getByRole("button", { name: "Siguiente", exact: true }).click()
+      await expect(history).toContainText("Página 2 de 2")
       await expect(history.locator("tbody tr")).toHaveCount(1)
       assert.ok(
         requests.some(
@@ -636,40 +647,50 @@ test(
     try {
       const profile = page.locator("#profile")
       await profile
-        .getByLabel("Profile first name", { exact: true })
+        .getByLabel("Nombre del perfil", { exact: true })
         .fill("Taylor")
       await profile
-        .getByRole("button", { name: "Save changes", exact: true })
+        .getByRole("button", { name: "Guardar cambios", exact: true })
         .click()
       await expect(
-        page.getByRole("heading", { name: "Welcome back, Taylor." })
+        page.getByRole("heading", { name: "Hola, Taylor." })
       ).toBeVisible()
       await profile
-        .getByLabel("Current password", { exact: true })
+        .getByLabel("Contraseña actual", { exact: true })
         .fill("wrong")
       await profile
-        .getByLabel("New password", { exact: true })
+        .getByLabel("Nueva contraseña", { exact: true })
         .fill("NewPassword123")
       await profile
-        .getByLabel("Confirm new password", { exact: true })
+        .getByLabel("Confirmar nueva contraseña", { exact: true })
         .fill("NewPassword123")
       await profile
-        .getByRole("button", { name: "Update password", exact: true })
+        .getByRole("button", { name: "Actualizar contraseña", exact: true })
         .click()
       await expect(profile.getByRole("alert")).toContainText(
         "contraseña actual"
       )
-      const upload = profile.getByLabel("Choose photo", { exact: true })
+      await page.route("**/api/usuarios/2", route => route.fulfill({
+        status: 400,
+        json: { error: "Datos inválidos", detalles: [{ campo: "password_actual", mensaje: "Invalid input: expected string, received undefined" }] }
+      }))
+      await profile.getByRole("button", { name: "Actualizar contraseña", exact: true }).click()
+      await expect(profile.getByRole("alert").last()).toHaveText("Contraseña actual: El valor ingresado no es válido.")
+      await page.unroute("**/api/usuarios/2")
+      await expect(profile.getByText("Seleccionar archivo", { exact: true })).toBeVisible()
+      await expect(profile.getByText("Ningún archivo seleccionado", { exact: true })).toBeVisible()
+      const upload = profile.getByLabel("Elegir foto", { exact: true })
       await upload.setInputFiles({
         name: "photo.gif",
         mimeType: "image/gif",
         buffer: Buffer.from("gif")
       })
+      await expect(profile.getByText("photo.gif", { exact: true })).toBeVisible()
       await profile
-        .getByRole("button", { name: "Upload photo", exact: true })
+        .getByRole("button", { name: "Subir foto", exact: true })
         .click()
       await expect(
-        profile.getByText("Choose a JPG or PNG photo.", { exact: true })
+        profile.getByText("Elige una foto JPG o PNG.", { exact: true })
       ).toBeVisible()
       await upload.setInputFiles({
         name: "photo.png",
@@ -677,32 +698,111 @@ test(
         buffer: png
       })
       await profile
-        .getByRole("button", { name: "Upload photo", exact: true })
+        .getByRole("button", { name: "Subir foto", exact: true })
         .click()
       await expect(
-        profile.getByRole("button", { name: "Remove photo", exact: true })
+        profile.getByRole("button", { name: "Eliminar foto", exact: true })
       ).toBeVisible()
       await profile
-        .getByRole("button", { name: "Remove photo", exact: true })
+        .getByRole("button", { name: "Eliminar foto", exact: true })
         .click()
       await page
         .getByRole("dialog")
-        .getByRole("button", { name: "Remove photo", exact: true })
+        .getByRole("button", { name: "Eliminar foto", exact: true })
         .click()
       await expect(
-        profile.getByRole("button", { name: "Remove photo", exact: true })
+        profile.getByRole("button", { name: "Eliminar foto", exact: true })
       ).toHaveCount(0)
+      await expect(profile.getByText("Ningún archivo seleccionado", { exact: true })).toBeVisible()
+      await page.setViewportSize({ width: 390, height: 844 })
+      await profile.screenshot({ path: screenshotDirectory + "profile-mobile.png" })
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
       fixture.expired = true
       await page
         .locator("#reservations")
-        .getByRole("button", { name: "Refresh", exact: true })
+        .getByRole("button", { name: "Actualizar", exact: true })
         .click()
       await expect(page).toHaveURL(origin + "login")
       await expect(
-        page.getByRole("button", { name: "Sign in", exact: true })
+        page.getByRole("button", { name: "Iniciar sesión", exact: true })
       ).toBeVisible()
     } finally {
       await context.close()
     }
   }
 )
+
+
+test("authentication stays Spanish in an English browser, including validation and signup retry", { timeout: 60_000 }, async () => {
+  resetFixture()
+  const context = await browser.newContext({ locale: "en-US", viewport: { width: 390, height: 844 } })
+  const page = await context.newPage()
+  let signedIn = false
+  let failNextLogin = false
+  let creations = 0
+  const errors = []
+  page.on("pageerror", error => errors.push(error.message))
+  await page.route("**/api/auth/me", route => route.fulfill({
+    status: signedIn ? 200 : 401,
+    json: signedIn ? fixture.users[1] : { error: "No autenticado" }
+  }))
+  await page.route("**/api/auth/login", route => {
+    if (failNextLogin || route.request().postDataJSON().password === "wrong") {
+      failNextLogin = false
+      return route.fulfill({ status: 401, json: { error: "Matrícula o contraseña incorrectas" } })
+    }
+    signedIn = true
+    return route.fulfill({ status: 204 })
+  })
+  await page.route("**/api/auth/signup", route => {
+    creations++
+    assert.deepEqual(route.request().postDataJSON(), {
+      nombre: "Sam", apellido: "Student", matricula: "A00002", password: "Password123"
+    })
+    failNextLogin = true
+    return route.fulfill({ status: 201, json: { id_usuario: 2 } })
+  })
+  try {
+    await page.goto(origin + "login")
+    await expect(page.getByRole("heading", { name: "Te damos la bienvenida" })).toBeVisible()
+    await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
+    const matricula = page.getByLabel("Matrícula", { exact: true })
+    assert.equal(await matricula.evaluate(input => input.validationMessage), "Completa este campo.")
+    await matricula.fill("A00002")
+    assert.equal(await matricula.evaluate(input => input.validationMessage), "")
+    const password = page.getByLabel("Contraseña", { exact: true })
+    await password.fill("wrong")
+    await expect(password).toHaveAttribute("type", "password")
+    await page.getByRole("button", { name: "Mostrar contraseña", exact: true }).click()
+    await expect(password).toHaveAttribute("type", "text")
+    await page.getByRole("button", { name: "Ocultar contraseña", exact: true }).click()
+    await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
+    await expect(page.getByRole("alert")).toHaveText("Matrícula o contraseña incorrectas")
+    await page.screenshot({ path: screenshotDirectory + "login-mobile.png" })
+    await password.fill("Password123")
+    await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
+    await expect(page.getByRole("heading", { name: "Hola, Sam." })).toBeVisible()
+
+    signedIn = false
+    await page.goto(origin + "signup")
+    await expect(page.getByRole("heading", { name: "Crea tu cuenta" })).toBeVisible()
+    await page.getByLabel("Nombre", { exact: true }).fill("Sam")
+    await page.getByLabel("Apellido", { exact: true }).fill("Student")
+    await page.getByLabel("Matrícula", { exact: true }).fill("A00002")
+    await page.getByLabel("Contraseña", { exact: true }).fill("Password123")
+    await page.getByLabel("Confirmar contraseña", { exact: true }).fill("Different123")
+    await page.getByRole("button", { name: "Crear cuenta", exact: true }).click()
+    await expect(page.getByRole("alert")).toHaveText("Las contraseñas no coinciden.")
+    await page.screenshot({ path: screenshotDirectory + "signup-mobile.png" })
+    await page.getByLabel("Confirmar contraseña", { exact: true }).fill("Password123")
+    await page.getByRole("button", { name: "Crear cuenta", exact: true }).click()
+    await expect(page.getByRole("status")).toHaveText("Tu cuenta se creó correctamente. Inicia sesión para continuar.")
+    await expect(page.getByRole("button", { name: "Iniciar sesión", exact: true })).toBeEnabled()
+    await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
+    await expect(page.getByRole("heading", { name: "Hola, Sam." })).toBeVisible()
+    assert.equal(creations, 1)
+    assert.deepEqual(errors, [])
+  } finally {
+    await context.close()
+  }
+})

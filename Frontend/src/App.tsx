@@ -26,11 +26,13 @@ const Sensors = lazy(() =>
   import("@/features/sensors").then((module) => ({ default: module.Sensors }))
 )
 
+import { formatNumber } from "@/lib/locale"
+
 const summaryLabels: Record<string, string> = {
-  usuarios: "Users",
-  espacios: "Cubicles",
-  reservaciones: "Reservations",
-  accesos: "Access attempts"
+  usuarios: "Usuarios",
+  espacios: "Cubículos",
+  reservaciones: "Reservaciones",
+  accesos: "Intentos de acceso"
 }
 
 export default function App({ user: initialUser }: { user: Usuario }) {
@@ -52,7 +54,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
     reservations.reload()
     current.reload()
     summary.reload()
-    setNotice("Reservations updated.")
+    setNotice("Reservaciones actualizadas.")
   }
 
   return (
@@ -65,17 +67,17 @@ export default function App({ user: initialUser }: { user: Usuario }) {
           <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
             <div>
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {admin ? "Kuby / Administration" : "Your campus workspace"}
+                {admin ? "Kuby / Administración" : "Tu espacio de trabajo en el campus"}
               </p>
               <h1 className="!m-0 !text-3xl !font-semibold !tracking-tight sm:!text-4xl">
                 {admin
-                  ? "A little room for everything."
-                  : "Welcome back, " + user.nombre + "."}
+                  ? "Un espacio para cada idea."
+                  : "Hola, " + user.nombre + "."}
               </h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 {admin
-                  ? "Manage spaces, people, and the visits that bring them together."
-                  : "Find your focus. Reserve a cubicle for your next session."}
+                  ? "Administra los espacios, las personas y sus visitas."
+                  : "Concéntrate en lo que importa. Reserva un cubículo para tu próxima sesión."}
               </p>
             </div>
             <img
@@ -98,7 +100,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               {summary.data && (
                 <div
                   className="grid grid-cols-2 gap-4 xl:grid-cols-4"
-                  aria-label="Administration totals"
+                  aria-label="Totales de administración"
                 >
                   {Object.entries(summary.data).map(([key, value]) => (
                     <Card key={key}>
@@ -109,7 +111,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
                       </CardHeader>
                       <CardContent>
                         <p className="text-3xl font-semibold tabular-nums">
-                          {value.toLocaleString()}
+                          {formatNumber(value)}
                         </p>
                       </CardContent>
                     </Card>
@@ -125,13 +127,13 @@ export default function App({ user: initialUser }: { user: Usuario }) {
             onBooked={() => {
               reservationsChanged()
               setNotice(
-                "Reservation confirmed. Check in within the first 10 minutes of its start time."
+                "Reservación confirmada. Registra tu entrada durante los primeros 10 minutos después de la hora de inicio."
               )
             }}
             onChange={() => {
               spaces.reload()
               summary.reload()
-              setNotice("Cubicles updated.")
+              setNotice("Cubículos actualizados.")
             }}
           />
           <Reservations
@@ -144,7 +146,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               currentUserId={user.id_usuario}
               onChange={() => {
                 summary.reload()
-                setNotice("User account updated.")
+                setNotice("Cuenta de usuario actualizada.")
               }}
             />
           )}

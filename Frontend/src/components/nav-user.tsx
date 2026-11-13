@@ -24,8 +24,8 @@ type NavUserProps = {
 }
 
 export function NavUser({
-  name = "Kuby user",
-  role = "User account",
+  name = "Usuario de Kuby",
+  role = "Cuenta de usuario",
   avatarUrl,
   onLogout,
   loggingOut = false
@@ -44,9 +44,9 @@ export function NavUser({
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<SidebarMenuButton size="lg" tooltip="Account menu" />}
+            render={<SidebarMenuButton size="lg" tooltip="Menú de cuenta" />}
             className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
-            aria-label={`Open account menu for ${name}`}
+            aria-label={`Abrir menú de cuenta de ${name}`}
           >
             <Avatar className="shrink-0">
               {avatarUrl && (
@@ -82,7 +82,7 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuItem render={<a href="#profile" />}>
                 <UserIcon />
-                My profile
+                Mi perfil
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -92,7 +92,7 @@ export function NavUser({
               disabled={!onLogout || loggingOut}
             >
               <SignOutIcon />
-              {loggingOut ? "Logging out..." : "Log out"}
+              {loggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

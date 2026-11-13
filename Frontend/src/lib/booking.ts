@@ -18,17 +18,17 @@ export function bookingTimes(
   const inicio = new Date(start)
   const fin = new Date(end)
   if (!Number.isFinite(inicio.getTime()) || !Number.isFinite(fin.getTime()))
-    throw new Error("Choose a valid start and end time.")
-  if (fin <= inicio) throw new Error("End time must be after start time.")
+    throw new Error("Elige una hora de inicio y una hora de fin válidas.")
+  if (fin <= inicio) throw new Error("La hora de fin debe ser posterior a la hora de inicio.")
   if (inicio.getTime() < now - 60_000)
-    throw new Error("Start time cannot be in the past.")
+    throw new Error("La hora de inicio no puede estar en el pasado.")
   return { hora_inicio: inicio.toISOString(), hora_fin: fin.toISOString() }
 }
 
 export function validatePhoto(file: File): void {
-  if (!file.size) throw new Error("Choose a photo first.")
+  if (!file.size) throw new Error("Primero elige una foto.")
   if (!["image/jpeg", "image/png"].includes(file.type))
-    throw new Error("Choose a JPG or PNG photo.")
+    throw new Error("Elige una foto JPG o PNG.")
   if (file.size > 2 * 1024 * 1024)
-    throw new Error("Photos must be 2 MB or smaller.")
+    throw new Error("La foto debe pesar 2 MB o menos.")
 }

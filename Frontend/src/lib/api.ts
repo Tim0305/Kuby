@@ -26,6 +26,42 @@ export class ApiError extends Error {
   }
 }
 
+/** Localize validator text at the client boundary; field keys remain API identifiers. */
+function validationMessage(message: string): string {
+  const length = /^Too (small|big): expected string to have (>=|<=|>|<|exactly )([\d.]+) characters$/.exec(message)
+  if (length) {
+    const [, size, operator, limit] = length
+    if (operator === "exactly ") return `Usa exactamente ${limit} caracteres.`
+    if (operator === ">") return `Usa más de ${limit} caracteres.`
+    if (operator === "<") return `Usa menos de ${limit} caracteres.`
+    return size === "small"
+      ? `Usa al menos ${limit} caracteres.`
+      : `Usa como máximo ${limit} caracteres.`
+  }
+  const range = /^Too (?:small|big): expected number to be (>=|<=|>|<|exactly )(-?[\d.]+)$/.exec(message)
+  if (range) {
+    const [, operator, limit] = range
+    const comparisons: Record<string, string> = {
+      ">": "mayor que",
+      ">=": "mayor o igual que",
+      "<": "menor que",
+      "<=": "menor o igual que",
+      "exactly ": "igual a"
+    }
+    return `Ingresa un número ${comparisons[operator]} ${limit}.`
+  }
+  if (message.startsWith("Invalid input: expected int"))
+    return "Ingresa un número entero válido."
+  if (message.startsWith("Invalid option:")) return "Selecciona una opción válida."
+  if (/^(Invalid|Unrecognized|Too (?:small|big))\b/.test(message))
+    return "El valor ingresado no es válido."
+  if (/\b(required|must|expected|cannot|should|invalid)\b/i.test(message))
+    return "Revisa el valor de este campo."
+  if (message === "Para cambiar la contraseña envía password_actual")
+    return "Ingresa tu contraseña actual para cambiarla."
+  return message
+}
+
 async function request<T = unknown>(
   path: string,
   options: RequestInit = {}
@@ -44,7 +80,7 @@ async function request<T = unknown>(
     if (options.signal?.aborted) throw error
     throw new ApiError(
       0,
-      "Cannot reach the API. Check that the backend is running and try again."
+      "No se pudo conectar con el servidor. Inténtalo de nuevo."
     )
   }
 
@@ -53,9 +89,9 @@ async function request<T = unknown>(
   const body: unknown = await response.json().catch(() => null)
   if (!response.ok) {
     const defaults: Record<number, string> = {
-      401: "Please sign in again. Your session is missing or has expired.",
-      403: "You do not have permission to perform this action.",
-      404: "The requested API endpoint is unavailable."
+      401: "Tu sesión no está disponible o ha expirado. Inicia sesión de nuevo.",
+      403: "No tienes permiso para realizar esta acción.",
+      404: "El servicio solicitado no está disponible."
     }
     const message =
       body &&
@@ -64,7 +100,7 @@ async function request<T = unknown>(
       typeof body.error === "string"
         ? body.error
         : (defaults[response.status] ??
-          "The API request failed. Please try again.")
+          "No se pudo completar la solicitud. Inténtalo de nuevo.")
     const fields: Record<string, string> = {}
     if (
       body &&
@@ -78,7 +114,7 @@ async function request<T = unknown>(
           typeof issue.campo === "string" &&
           typeof issue.mensaje === "string"
         ) {
-          fields[issue.campo] = issue.mensaje
+          fields[issue.campo] = validationMessage(issue.mensaje)
         }
       }
     }
@@ -88,7 +124,7 @@ async function request<T = unknown>(
     throw new ApiError(response.status, message, fields)
   }
   if (body === null)
-    throw new ApiError(response.status, "The API returned an invalid response.")
+    throw new ApiError(response.status, "El servidor devolvió una respuesta inválida.")
   return body as T
 }
 
@@ -119,7 +155,7 @@ function isUsuario(value: unknown): value is Usuario {
 export async function getCurrentUser(signal?: AbortSignal): Promise<Usuario> {
   const user = await request("/auth/me", { signal })
   if (!isUsuario(user))
-    throw new ApiError(200, "The API returned an invalid user profile.")
+    throw new ApiError(200, "El servidor devolvió un perfil de usuario inválido.")
   return user
 }
 
@@ -129,7 +165,7 @@ export async function getUsers(
 ): Promise<Usuario[]> {
   const users = await request(`/usuarios${query({ estatus })}`, { signal })
   if (!Array.isArray(users) || !users.every(isUsuario)) {
-    throw new ApiError(200, "The API returned an invalid user list.")
+    throw new ApiError(200, "El servidor devolvió una lista de usuarios inválida.")
   }
   return users
 }
@@ -169,7 +205,7 @@ export async function signup(values: Signup): Promise<void> {
     !("id_usuario" in result) ||
     typeof result.id_usuario !== "number"
   ) {
-    throw new ApiError(201, "The API returned an invalid signup response.")
+    throw new ApiError(201, "El servidor devolvió una respuesta de registro inválida.")
   }
 }
 

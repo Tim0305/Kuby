@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui"
+import { formatNumber } from "@/lib/locale"
 import { getAccessHistory } from "@/lib/api"
 import type { Espacio, FiltrosAccesos } from "@/lib/api"
 import { useRemote } from "@/hooks/use-remote"
@@ -27,12 +28,12 @@ import {
 } from "@/features/shared"
 
 const denialReasons: Record<string, string> = {
-  credencial_invalida: "Unknown credential",
-  credencial_inactiva: "Inactive credential",
-  usuario_inactivo: "Inactive user",
-  espacio_no_disponible: "Cubicle unavailable",
-  reservacion_liberada: "Reservation released after missed check-in",
-  sin_reservacion_vigente: "No reservation at this time"
+  credencial_invalida: "Credencial desconocida",
+  credencial_inactiva: "Credencial inactiva",
+  usuario_inactivo: "Usuario inactivo",
+  espacio_no_disponible: "Cubículo no disponible",
+  reservacion_liberada: "Reservación liberada por no registrar la entrada",
+  sin_reservacion_vigente: "No hay una reservación vigente"
 }
 
 export function AccessHistory({
@@ -56,24 +57,24 @@ export function AccessHistory({
   return (
     <Section
       id="access"
-      title="Access history"
+      title="Historial de accesos"
       description={
         admin
-          ? "Entry attempts across the system, including unknown credentials."
-          : "Your cubicle entry attempts and their results."
+          ? "Intentos de acceso en todo el sistema, incluidas las credenciales desconocidas."
+          : "Tus intentos de acceso a los cubículos y sus resultados."
       }
       action={<RefreshButton {...history} />}
     >
       <Card>
         <CardContent>
           <ActionForm
-            submit="Apply filters"
+            submit="Aplicar filtros"
             action={async (values) => {
               const from = text(values, "from"),
                 until = text(values, "until")
               if (from && until && new Date(until) < new Date(from))
                 throw new Error(
-                  "The end of the date range must follow the start."
+                  "El fin del intervalo debe ser posterior al inicio."
                 )
               setFilters({
                 pagina: 1,
@@ -92,13 +93,13 @@ export function AccessHistory({
             }}
           >
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <FormField label="Cubicle">
+              <FormField label="Cubículo">
                 <Choice
-                  label="Filter access by cubicle"
+                  label="Filtrar accesos por cubículo"
                   value={space}
                   onChange={setSpace}
                   options={[
-                    { value: "", label: "All cubicles" },
+                    { value: "", label: "Todos los cubículos" },
                     ...spaces.map((space) => ({
                       value: String(space.id_espacio),
                       label: space.nombre_espacio
@@ -106,41 +107,41 @@ export function AccessHistory({
                   ]}
                 />
               </FormField>
-              <FormField label="Result">
+              <FormField label="Resultado">
                 <Choice
-                  label="Filter access by result"
+                  label="Filtrar accesos por resultado"
                   value={result}
                   onChange={setResult}
                   options={[
-                    { value: "", label: "All results" },
-                    { value: "permitido", label: "Allowed" },
-                    { value: "denegado", label: "Denied" }
+                    { value: "", label: "Todos los resultados" },
+                    { value: "permitido", label: "Permitido" },
+                    { value: "denegado", label: "Denegado" }
                   ]}
                 />
               </FormField>
-              <FormField label="From (local time)">
+              <FormField label="Desde (hora local)">
                 <Input
-                  aria-label="Access from"
+                  aria-label="Accesos desde"
                   type="datetime-local"
                   name="from"
                 />
               </FormField>
-              <FormField label="Until (local time)">
+              <FormField label="Hasta (hora local)">
                 <Input
-                  aria-label="Access until"
+                  aria-label="Accesos hasta"
                   type="datetime-local"
                   name="until"
                 />
               </FormField>
               {admin && (
-                <FormField label="User ID">
+                <FormField label="ID de usuario">
                   <Input
-                    aria-label="Filter access by user ID"
+                    aria-label="Filtrar accesos por ID de usuario"
                     name="user"
                     type="number"
                     step={1}
                     min={1}
-                    placeholder="All users"
+                    placeholder="Todos los usuarios"
                   />
                 </FormField>
               )}
@@ -154,12 +155,12 @@ export function AccessHistory({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Cubicle</TableHead>
-                {admin && <TableHead>User</TableHead>}
-                <TableHead>Method</TableHead>
-                <TableHead>Result</TableHead>
-                <TableHead>Reason</TableHead>
+                <TableHead>Fecha y hora</TableHead>
+                <TableHead>Cubículo</TableHead>
+                {admin && <TableHead>Usuario</TableHead>}
+                <TableHead>Método</TableHead>
+                <TableHead>Resultado</TableHead>
+                <TableHead>Motivo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,7 +170,7 @@ export function AccessHistory({
                     colSpan={admin ? 6 : 5}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    No access attempts match these filters.
+                    No hay intentos de acceso que coincidan con estos filtros.
                   </TableCell>
                 </TableRow>
               )}
@@ -179,11 +180,11 @@ export function AccessHistory({
                     <LocalTime value={access.fecha} />
                   </TableCell>
                   <TableCell>
-                    {access.nombre_espacio ?? "Unknown cubicle"}
+                    {access.nombre_espacio ?? "Cubículo desconocido"}
                   </TableCell>
                   {admin && (
                     <TableCell>
-                      {access.usuario ?? "Unknown credential"}
+                      {access.usuario ?? "Credencial desconocida"}
                     </TableCell>
                   )}
                   <TableCell className="uppercase">
@@ -204,8 +205,8 @@ export function AccessHistory({
           </Table>
           <CardContent className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <p className="text-sm text-muted-foreground">
-              {history.data.total} attempts · Page {filters.pagina} of{" "}
-              {Math.max(1, Math.ceil(history.data.total / filters.limite))}
+              {formatNumber(history.data.total)} {history.data.total === 1 ? "intento" : "intentos"} · Página {formatNumber(filters.pagina)} de{" "}
+              {formatNumber(Math.max(1, Math.ceil(history.data.total / filters.limite)))}
             </p>
             <div className="flex gap-2">
               <Button
@@ -215,7 +216,7 @@ export function AccessHistory({
                   setFilters({ ...filters, pagina: filters.pagina - 1 })
                 }
               >
-                Previous
+                Anterior
               </Button>
               <Button
                 variant="outline"
@@ -227,7 +228,7 @@ export function AccessHistory({
                   setFilters({ ...filters, pagina: filters.pagina + 1 })
                 }
               >
-                Next
+                Siguiente
               </Button>
             </div>
           </CardContent>

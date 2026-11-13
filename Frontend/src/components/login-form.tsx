@@ -23,14 +23,14 @@ export function LoginForm({ onLogin }: AuthFormProps) {
     setError(null)
     setFields({})
     if (!matricula) {
-      setFields({ matricula: "Enter your student ID." })
+      setFields({ matricula: "Ingresa tu matrícula." })
       return
     }
     setPending(true)
     try {
       await onLogin(matricula, String(values.get("password") ?? ""))
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not sign in. Please try again.")
+      setError(error instanceof Error ? error.message : "No se pudo iniciar sesión. Inténtalo de nuevo.")
       if (error instanceof ApiError) setFields(error.fields)
       setPending(false)
     }
@@ -39,26 +39,26 @@ export function LoginForm({ onLogin }: AuthFormProps) {
   return (
     <Card className="border border-transparent [--card-spacing:--spacing(6)]">
       <CardHeader className="gap-2 text-center">
-        <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">Welcome back</CardTitle>
-        <CardDescription>Sign in to your Kuby account</CardDescription>
+        <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">Te damos la bienvenida</CardTitle>
+        <CardDescription>Inicia sesión en tu cuenta de Kuby</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} aria-busy={pending}>
           <FieldGroup>
             <Field data-invalid={!!fields.matricula}>
-              <FieldLabel htmlFor="matricula">Student ID</FieldLabel>
+              <FieldLabel htmlFor="matricula">Matrícula</FieldLabel>
               <Input id="matricula" name="matricula" placeholder="A00000000" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={20} required disabled={pending} aria-invalid={!!fields.matricula} aria-describedby={fields.matricula ? "matricula-error" : undefined} className="h-10 bg-background text-sm md:text-sm" />
               <FieldError id="matricula-error">{fields.matricula}</FieldError>
             </Field>
             <Field data-invalid={!!fields.password}>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <FieldLabel htmlFor="password">Contraseña</FieldLabel>
               <PasswordInput id="password" name="password" autoComplete="current-password" maxLength={72} required disabled={pending} aria-invalid={!!fields.password} aria-describedby={fields.password ? "password-error" : undefined} />
               <FieldError id="password-error">{fields.password}</FieldError>
             </Field>
             <Field>
               <FieldError>{error}</FieldError>
-              <Button type="submit" disabled={pending} className="h-10 w-full text-sm">{pending ? "Signing in..." : "Sign in"}</Button>
-              <FieldDescription className="text-center">Don&apos;t have an account? <a href="/signup">Sign up</a></FieldDescription>
+              <Button type="submit" disabled={pending} className="h-10 w-full text-sm">{pending ? "Iniciando sesión..." : "Iniciar sesión"}</Button>
+              <FieldDescription className="text-center">¿No tienes una cuenta? <a href="/signup">Crear cuenta</a></FieldDescription>
             </Field>
           </FieldGroup>
         </form>

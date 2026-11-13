@@ -40,8 +40,8 @@ function UserEditor({
   const [status, setStatus] = useState(user.estatus)
   return (
     <Modal
-      title="Edit user"
-      description={`${user.matricula} · Passwords can only be changed by the account owner.`}
+      title="Editar usuario"
+      description={`${user.matricula} · Solo el titular de la cuenta puede cambiar su contraseña.`}
       onClose={onClose}
     >
       <ActionForm
@@ -58,40 +58,40 @@ function UserEditor({
           onClose()
         }}
       >
-        <FormField label="First name">
+        <FormField label="Nombre">
           <Input
-            aria-label="First name"
+            aria-label="Nombre"
             name="nombre"
             required
             maxLength={100}
             defaultValue={user.nombre}
           />
         </FormField>
-        <FormField label="Last name">
+        <FormField label="Apellido">
           <Input
-            aria-label="Last name"
+            aria-label="Apellido"
             name="apellido"
             required
             maxLength={100}
             defaultValue={user.apellido}
           />
         </FormField>
-        <FormField label="Role">
+        <FormField label="Rol">
           <Choice
-            label="Role"
+            label="Rol"
             value={role}
             onChange={setRole}
             options={roles}
           />
         </FormField>
-        <FormField label="Status">
+        <FormField label="Estado">
           <Choice
-            label="User status"
+            label="Estado del usuario"
             value={status}
             onChange={setStatus}
             options={[
-              { value: "activo", label: "Active" },
-              { value: "inactivo", label: "Inactive" }
+              { value: "activo", label: "Activo" },
+              { value: "inactivo", label: "Inactivo" }
             ]}
           />
         </FormField>
@@ -124,7 +124,7 @@ export function Users({
   const roles = [...roleIds].map(([label, id]) => ({
     value: String(id),
     label:
-      label === "admin" ? "Administrator" : label === "usuario" ? "User" : label
+      label === "admin" ? "Administrador" : label === "usuario" ? "Usuario" : label
   }))
   function changed() {
     users.reload()
@@ -134,18 +134,18 @@ export function Users({
   return (
     <Section
       id="users"
-      title="Users"
-      description="Manage account access and roles."
+      title="Usuarios"
+      description="Administra los accesos y los roles de las cuentas."
       action={
         <div className="w-44">
           <Choice
-            label="Filter users by status"
+            label="Filtrar usuarios por estado"
             value={status}
             onChange={setStatus}
             options={[
-              { value: "", label: "All statuses" },
-              { value: "activo", label: "Active" },
-              { value: "inactivo", label: "Inactive" }
+              { value: "", label: "Todos los estados" },
+              { value: "activo", label: "Activo" },
+              { value: "inactivo", label: "Inactivo" }
             ]}
           />
         </div>
@@ -157,11 +157,11 @@ export function Users({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Student ID</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Matrícula</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,7 +171,7 @@ export function Users({
                     colSpan={5}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    No users match this filter.
+                    No hay usuarios que coincidan con este filtro.
                   </TableCell>
                 </TableRow>
               )}
@@ -181,12 +181,12 @@ export function Users({
                     {user.nombre} {user.apellido}
                     {user.id_usuario === currentUserId && (
                       <span className="ml-2 text-xs text-muted-foreground">
-                        You
+                        Tú
                       </span>
                     )}
                   </TableCell>
                   <TableCell>{user.matricula}</TableCell>
-                  <TableCell>{user.rol ?? "Unassigned"}</TableCell>
+                  <TableCell>{user.rol === "admin" ? "Administrador" : user.rol === "usuario" ? "Usuario" : (user.rol ?? "Sin asignar")}</TableCell>
                   <TableCell>
                     <Status value={user.estatus} />
                   </TableCell>
@@ -199,7 +199,7 @@ export function Users({
                           role="link"
                           render={<a href="#profile" />}
                         >
-                          Edit my profile
+                          Editar mi perfil
                         </Button>
                       ) : (
                         <>
@@ -207,12 +207,12 @@ export function Users({
                             variant="outline"
                             onClick={() => setEditing(user)}
                           >
-                            Edit
+                            Editar
                           </Button>
                           {user.estatus === "activo" && (
                             <ConfirmAction
-                              label="Deactivate user"
-                              description={`Deactivate ${user.nombre} ${user.apellido}? They will lose access, including their current session.`}
+                              label="Desactivar usuario"
+                              description={`¿Quieres desactivar a ${user.nombre} ${user.apellido}? Perderá el acceso y se cerrará su sesión actual.`}
                               action={() => deactivateUser(user.id_usuario)}
                               onDone={changed}
                             />

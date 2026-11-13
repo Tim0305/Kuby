@@ -57,20 +57,20 @@ function Navigation({
   )
   const items = admin
     ? [
-        { title: "Overview", href: "#overview", icon: HouseIcon },
-        { title: "Cubicles", href: "#spaces", icon: SquaresFourIcon },
-        { title: "Reservations", href: "#reservations", icon: CalendarIcon },
-        { title: "Users", href: "#users", icon: UsersIcon }
+        { title: "Resumen", href: "#overview", icon: HouseIcon },
+        { title: "Cubículos", href: "#spaces", icon: SquaresFourIcon },
+        { title: "Reservaciones", href: "#reservations", icon: CalendarIcon },
+        { title: "Usuarios", href: "#users", icon: UsersIcon }
       ]
     : [
-        { title: "Home", href: "#overview", icon: HouseIcon },
-        { title: "Explore cubicles", href: "#spaces", icon: SquaresFourIcon },
-        { title: "My reservations", href: "#reservations", icon: CalendarIcon }
+        { title: "Inicio", href: "#overview", icon: HouseIcon },
+        { title: "Explorar cubículos", href: "#spaces", icon: SquaresFourIcon },
+        { title: "Mis reservaciones", href: "#reservations", icon: CalendarIcon }
       ]
   items.push(
-    { title: "Conditions", href: "#sensors", icon: PulseIcon },
-    { title: "Access history", href: "#access", icon: ListChecksIcon },
-    { title: "My profile", href: "#profile", icon: UserIcon }
+    { title: "Condiciones", href: "#sensors", icon: PulseIcon },
+    { title: "Historial de accesos", href: "#access", icon: ListChecksIcon },
+    { title: "Mi perfil", href: "#profile", icon: UserIcon }
   )
 
   return (
@@ -96,7 +96,7 @@ function Navigation({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {admin ? "Administration" : "My Kuby"}
+            {admin ? "Administración" : "Mi Kuby"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -121,7 +121,7 @@ function Navigation({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser role={admin ? "Administrator" : "User account"} {...account} />
+        <NavUser role={admin ? "Administrador" : "Cuenta de usuario"} {...account} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
@@ -152,7 +152,7 @@ export function AppLayout({
       setLogoutError(
         error instanceof Error
           ? error.message
-          : "Could not sign out. Please try again."
+          : "No se pudo cerrar la sesión. Inténtalo de nuevo."
       )
       setLoggingOut(false)
     }
@@ -160,7 +160,7 @@ export function AppLayout({
 
   const account: AccountProps = {
     name: `${user.nombre} ${user.apellido}`,
-    role: user.rol === "admin" ? "Administrator" : "User account",
+    role: user.rol === "admin" ? "Administrador" : "Cuenta de usuario",
     avatarUrl: user.tiene_foto
       ? `/api/usuarios/${user.id_usuario}/foto?v=${avatarVersion}`
       : undefined,
@@ -176,7 +176,7 @@ export function AppLayout({
           <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
             <SidebarTrigger />
             <span className="text-sm font-medium">
-              {admin ? "Administration" : "My Kuby"}
+              {admin ? "Administración" : "Mi Kuby"}
             </span>
           </header>
           {logoutError && (

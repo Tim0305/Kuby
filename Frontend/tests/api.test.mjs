@@ -123,14 +123,14 @@ test("photo uploads use multipart foto and successful delete responses need no J
 
 test("booking rejects invalid, reversed, and past times while allowing the backend's one-minute clock margin", () => {
   const now = Date.parse("2030-01-01T12:00:00Z")
-  assert.throws(() => booking.bookingTimes("", "", now), /valid start/)
+  assert.throws(() => booking.bookingTimes("", "", now), /inicio y una hora de fin válidas/)
   assert.throws(
     () => booking.bookingTimes("2030-01-01T13:00Z", "2030-01-01T12:00Z", now),
-    /after start/
+    /posterior a la hora de inicio/
   )
   assert.throws(
     () => booking.bookingTimes("2030-01-01T11:58Z", "2030-01-01T13:00Z", now),
-    /past/
+    /pasado/
   )
   assert.doesNotThrow(() =>
     booking.bookingTimes("2030-01-01T11:59:30Z", "2030-01-01T13:00Z", now)
@@ -159,14 +159,14 @@ test("photos enforce format and size before upload", () => {
   assert.throws(
     () =>
       booking.validatePhoto(new File([], "empty.png", { type: "image/png" })),
-    /Choose a photo/
+    /elige una foto/
   )
   assert.throws(
     () =>
       booking.validatePhoto(
         new File(["gif"], "photo.gif", { type: "image/gif" })
       ),
-    /JPG or PNG/
+    /JPG o PNG/
   )
   assert.throws(
     () =>
@@ -180,4 +180,46 @@ test("photos enforce format and size before upload", () => {
   assert.doesNotThrow(() =>
     booking.validatePhoto(new File(["png"], "photo.png", { type: "image/png" }))
   )
+})
+
+
+test("English validator details become Spanish without changing API field keys", async () => {
+  const cases = [
+    ["Too small: expected string to have >=8 characters", "Usa al menos 8 caracteres."],
+    ["Too big: expected string to have <=100 characters", "Usa como máximo 100 caracteres."],
+    ["Too small: expected number to be >0", "Ingresa un número mayor que 0."],
+    ["Too big: expected number to be <=100", "Ingresa un número menor o igual que 100."],
+    ["Invalid input: expected int, received number", "Ingresa un número entero válido."],
+    ['Invalid option: expected one of "activo"|"inactivo"', "Selecciona una opción válida."],
+    ["Invalid input: expected date, received string", "El valor ingresado no es válido."],
+    ["Unrecognized key: extra", "El valor ingresado no es válido."],
+    ["This value must be valid", "Revisa el valor de este campo."],
+    ["La hora de fin debe ser posterior", "La hora de fin debe ser posterior"],
+    ["Para cambiar la contraseña envía password_actual", "Ingresa tu contraseña actual para cambiarla."]
+  ]
+  for (const [mensaje, expected] of cases) {
+    respond({ error: "Datos inválidos", detalles: [{ campo: "hora_fin", mensaje }] }, 400)
+    await assert.rejects(api.updateReservation(1, {}), (error) => {
+      assert.equal(error.status, 400)
+      assert.equal(error.message, "Datos inválidos")
+      assert.deepEqual(error.fields, { hora_fin: expected })
+      return true
+    })
+  }
+})
+
+test("network, HTTP fallback, and malformed response errors are Spanish", async () => {
+  globalThis.fetch = async () => { throw new TypeError("Failed to fetch") }
+  await assert.rejects(api.getSpaces(), { status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." })
+  for (const [status, message] of [
+    [401, "Tu sesión no está disponible o ha expirado. Inicia sesión de nuevo."],
+    [403, "No tienes permiso para realizar esta acción."],
+    [404, "El servicio solicitado no está disponible."],
+    [500, "No se pudo completar la solicitud. Inténtalo de nuevo."]
+  ]) {
+    respond({}, status)
+    await assert.rejects(api.login("A00002", "password"), { status, message })
+  }
+  globalThis.fetch = async () => new Response("invalid JSON", { status: 200 })
+  await assert.rejects(api.getSpaces(), { message: "El servidor devolvió una respuesta inválida." })
 })

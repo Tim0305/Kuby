@@ -21,20 +21,21 @@ import { getReadings, getSensorState } from "@/lib/api"
 import type { Espacio, Sensor } from "@/lib/api"
 import { useRemote } from "@/hooks/use-remote"
 import { Choice, LocalTime, RemoteState, Section } from "@/features/shared"
+import { formatDateTime, formatNumber, formatTime } from "@/lib/locale"
 
 const sensorLabels: Record<Sensor, { label: string; unit: string }> = {
-  temperatura: { label: "Temperature", unit: "°C" },
-  humedad: { label: "Humidity", unit: "%" },
-  proximidad: { label: "Proximity", unit: "" }
+  temperatura: { label: "Temperatura", unit: "°C" },
+  humedad: { label: "Humedad", unit: "%" },
+  proximidad: { label: "Proximidad", unit: "" }
 }
 const sensors = Object.keys(sensorLabels) as Sensor[]
 
 function readingValue(sensor: Sensor, value: number) {
   return sensor === "proximidad"
     ? Number(value) === 1
-      ? "Detected"
-      : "No detection"
-    : `${Number(value).toLocaleString([], { maximumFractionDigits: 1 })} ${sensorLabels[sensor].unit}`
+      ? "Presencia detectada"
+      : "Sin detección"
+    : `${formatNumber(Number(value), { maximumFractionDigits: 1 })} ${sensorLabels[sensor].unit}`
 }
 
 function SensorDetails({ spaceId }: { spaceId: number }) {
@@ -73,7 +74,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                   {reading ? (
                     <LocalTime value={reading.registrado_en} />
                   ) : (
-                    "No readings yet"
+                    "Aún no hay lecturas"
                   )}
                 </p>
               </CardContent>
@@ -84,15 +85,14 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
       <Card>
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <CardTitle>Recent readings</CardTitle>
+            <CardTitle>Lecturas recientes</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Latest 50 readings · Refreshes every minute while this tab is
-              visible.
+              Últimas 50 lecturas · Se actualizan cada minuto mientras esta pestaña está visible.
             </p>
           </div>
           <div className="w-44">
             <Choice
-              label="Sensor history"
+              label="Historial del sensor"
               value={sensor}
               onChange={(value) => setSensor(value as Sensor)}
               options={sensors.map((value) => ({
@@ -106,8 +106,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
           <RemoteState {...readings} />
           {readings.data?.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No {sensorLabels[sensor].label.toLowerCase()} readings for this
-              cubicle yet.
+              Aún no hay lecturas de {sensorLabels[sensor].label.toLowerCase()} para este cubículo.
             </p>
           )}
           {points.length > 0 && (
@@ -120,7 +119,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                   }
                 }}
                 className="h-56 w-full"
-                aria-label={`${sensorLabels[sensor].label} history`}
+                aria-label={`Historial de ${sensorLabels[sensor].label.toLowerCase()}`}
               >
                 <LineChart
                   accessibilityLayer
@@ -133,12 +132,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                     tickLine={false}
                     axisLine={false}
                     minTickGap={40}
-                    tickFormatter={(value: string) =>
-                      new Date(value).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })
-                    }
+                    tickFormatter={(value: string) => formatTime(value)}
                   />
                   <YAxis
                     tickLine={false}
@@ -146,15 +140,14 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
                     width={42}
                     domain={sensor === "proximidad" ? [0, 1] : ["auto", "auto"]}
                     allowDecimals={sensor !== "proximidad"}
+                    tickFormatter={(value: number) => formatNumber(value)}
                     unit={sensorLabels[sensor].unit}
                   />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
                         labelFormatter={(_, payload) =>
-                          new Date(
-                            String(payload[0]?.payload?.fecha)
-                          ).toLocaleString()
+                          formatDateTime(String(payload[0]?.payload?.fecha))
                         }
                       />
                     }
@@ -172,7 +165,7 @@ function SensorDetails({ spaceId }: { spaceId: number }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Latest 10 readings</TableHead>
+                    <TableHead>Últimas 10 lecturas</TableHead>
                     <TableHead className="text-right">
                       {sensorLabels[sensor].label}
                     </TableHead>
@@ -207,13 +200,13 @@ export function Sensors({ spaces }: { spaces: Espacio[] }) {
   return (
     <Section
       id="sensors"
-      title="Cubicle conditions"
-      description="Sensor measurements show the last reported conditions, independent of booking availability."
+      title="Condiciones de los cubículos"
+      description="Las mediciones muestran las últimas condiciones reportadas, independientemente de la disponibilidad para reservar."
       action={
         spaces.length > 0 && (
           <div className="w-56">
             <Choice
-              label="Cubicle for sensor readings"
+              label="Cubículo para consultar lecturas"
               value={String(spaceId)}
               onChange={setSelected}
               options={spaces.map((space) => ({
@@ -230,7 +223,7 @@ export function Sensors({ spaces }: { spaces: Espacio[] }) {
       ) : (
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            Add a cubicle to view its sensor readings.
+            Agrega un cubículo para consultar sus lecturas.
           </CardContent>
         </Card>
       )}

@@ -1,8 +1,9 @@
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
+import { inputValidationMessage } from "@/lib/locale"
 import { cn } from "cn"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type, onInvalid, onInput, ...props }: React.ComponentProps<"input">) {
   return (
     <InputPrimitive
       type={type}
@@ -12,6 +13,16 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         className
       )}
       {...props}
+      onInvalid={(event) => {
+        const input = event.currentTarget
+        input.setCustomValidity("")
+        input.setCustomValidity(inputValidationMessage(input))
+        onInvalid?.(event)
+      }}
+      onInput={(event) => {
+        event.currentTarget.setCustomValidity("")
+        onInput?.(event)
+      }}
     />
   )
 }

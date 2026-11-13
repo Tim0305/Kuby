@@ -38,12 +38,12 @@ function SpaceEditor({
   )
   return (
     <Modal
-      title={space ? "Edit cubicle" : "New cubicle"}
-      description="Set the location, capacity, and operational status."
+      title={space ? "Editar cubículo" : "Nuevo cubículo"}
+      description="Define la ubicación, la capacidad y el estado operativo."
       onClose={onClose}
     >
       <ActionForm
-        submit={space ? "Save changes" : "Create cubicle"}
+        submit={space ? "Guardar cambios" : "Crear cubículo"}
         action={async (values) => {
           const data = {
             nombre_espacio: text(values, "name"),
@@ -60,27 +60,27 @@ function SpaceEditor({
           onClose()
         }}
       >
-        <FormField label="Name">
+        <FormField label="Nombre">
           <Input
-            aria-label="Name"
+            aria-label="Nombre"
             name="name"
             required
             maxLength={100}
             defaultValue={space?.nombre_espacio}
           />
         </FormField>
-        <FormField label="Location">
+        <FormField label="Ubicación">
           <Input
-            aria-label="Location"
+            aria-label="Ubicación"
             name="location"
             maxLength={100}
             defaultValue={space?.ubicacion ?? ""}
           />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Capacity">
+          <FormField label="Capacidad">
             <Input
-              aria-label="Capacity"
+              aria-label="Capacidad"
               name="capacity"
               type="number"
               min={1}
@@ -89,22 +89,22 @@ function SpaceEditor({
               defaultValue={space?.capacidad ?? 1}
             />
           </FormField>
-          <FormField label="Status">
+          <FormField label="Estado">
             <Choice
-              label="Cubicle status"
+              label="Estado del cubículo"
               value={status}
               onChange={(value) => setStatus(value as EstadoEspacio)}
               options={[
-                { value: "activo", label: "Active" },
-                { value: "inactivo", label: "Inactive" },
-                { value: "mantenimiento", label: "Maintenance" }
+                { value: "activo", label: "Activo" },
+                { value: "inactivo", label: "Inactivo" },
+                { value: "mantenimiento", label: "Mantenimiento" }
               ]}
             />
           </FormField>
         </div>
-        <FormField label="ESP32 address (optional)">
+        <FormField label="Dirección del ESP32 (opcional)">
           <Input
-            aria-label="ESP32 address"
+            aria-label="Dirección del ESP32"
             name="ip"
             maxLength={45}
             defaultValue={space?.ip_nodo_esp32 ?? ""}
@@ -131,13 +131,13 @@ export function Spaces({
   return (
     <Section
       id="spaces"
-      title={admin ? "Cubicles" : "Explore cubicles"}
-      description="Find a space for focused work or your next team session."
+      title={admin ? "Cubículos" : "Explorar cubículos"}
+      description="Encuentra un espacio para concentrarte o para tu próxima sesión en equipo."
       action={
         admin && (
           <Button onClick={() => setEditor("new")}>
             <PlusIcon data-icon="inline-start" />
-            New cubicle
+            Nuevo cubículo
           </Button>
         )
       }
@@ -146,7 +146,7 @@ export function Spaces({
       {resource.data?.length === 0 && (
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            No cubicles have been added yet.
+            Aún no se han agregado cubículos.
           </CardContent>
         </Card>
       )}
@@ -156,7 +156,7 @@ export function Spaces({
             <CardHeader>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <span className="font-mono text-xs text-muted-foreground">
-                  CUBICLE {String(space.id_espacio).padStart(2, "0")}
+                  CUBÍCULO {String(space.id_espacio).padStart(2, "0")}
                 </span>
                 <Status value={space.estado_espacio} />
               </div>
@@ -166,11 +166,11 @@ export function Spaces({
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p className="flex items-center gap-2">
                   <MapPinIcon />
-                  {space.ubicacion || "Location not specified"}
+                  {space.ubicacion || "Ubicación no especificada"}
                 </p>
                 <p className="flex items-center gap-2">
                   <UsersIcon />
-                  Up to {space.capacidad} people
+                  Hasta {space.capacidad} {space.capacidad === 1 ? "persona" : "personas"}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -179,18 +179,18 @@ export function Spaces({
                   onClick={() => setBooking(space)}
                 >
                   {space.estado_espacio === "activo"
-                    ? "Reserve cubicle"
-                    : "Unavailable"}
+                    ? "Reservar cubículo"
+                    : "No disponible"}
                 </Button>
                 {admin && (
                   <>
                     <Button variant="outline" onClick={() => setEditor(space)}>
-                      Edit
+                      Editar
                     </Button>
                     {space.estado_espacio !== "inactivo" && (
                       <ConfirmAction
-                        label="Deactivate"
-                        description={`Deactivate ${space.nombre_espacio}? New reservations will be blocked. Existing reservations remain in history.`}
+                        label="Desactivar"
+                        description={`¿Quieres desactivar ${space.nombre_espacio}? Se bloquearán las nuevas reservaciones. Las reservaciones existentes permanecerán en el historial.`}
                         action={() => deactivateSpace(space.id_espacio)}
                         onDone={onChange}
                       />
