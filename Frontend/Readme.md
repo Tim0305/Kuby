@@ -20,6 +20,12 @@ The authentication pages adapt the shadcn `login-03` and `signup-03` blocks to K
 - `npm run build` checks TypeScript and creates the production build.
 - `npm run lint` checks the project with ESLint.
 
+## Application styling
+
+`src/index.css` is the single application stylesheet, imported once by `src/main.tsx`. It contains the local fonts, light/dark theme tokens, Tailwind v4 bindings, shared component surfaces, dashboard and authentication layouts, responsive rules, and accessibility states.
+
+Add shared colours, status palettes, and radii to the theme tokens first. Keep feature rules in their labelled sections and breakpoint overrides in the responsive section. Style existing Base UI components through their data slots; keep layout utilities in React and component behavior in the existing primitives. Login, signup, session feedback, and both dashboards share this style system. No external theme-preview script is loaded.
+
 ## Workspace features
 
 - Users can browse cubicles, book, reschedule upcoming reservations, cancel eligible reservations, and see their current/next visit. Availability is checked by the backend when saving; there is no public calendar API.
