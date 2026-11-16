@@ -10,8 +10,8 @@ constexpr int SCL_PIN = 9;
 // SCL 9
 // IR 1
 // RESET 2
-constexpr int PN532_IRQ_PIN = 1;
-constexpr int PN532_RESET_PIN = 2;
+constexpr int PN532_IRQ_PIN = 18;
+constexpr int PN532_RESET_PIN = 17;
 
 // Motor a pasos
 // IN1 4

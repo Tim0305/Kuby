@@ -7,8 +7,8 @@ Usa los pines de `include/pins.h`:
 | --- | --- |
 | SDA | 8 |
 | SCL | 9 |
-| IRQ | 1 |
-| RESET | 2 |
+| IRQ | 18 |
+| RESET | 17 |
 
 Configura los selectores del modulo en modo I2C y conecta GND comun.
 Alimenta el modulo segun sus especificaciones.
