@@ -1,14 +1,17 @@
 #pragma once
 
+// SDA 8
+// SCL 9
+constexpr int SDA_PIN = 8;
+constexpr int SCL_PIN = 9;
+
 // RFID
 // SDA 8
 // SCL 9
 // IR 1
 // RESET 2
-constexpr int RFID_IRQ_PIN = 1;
-constexpr int RFID_RESET_PIN = 2;
-constexpr int RFID_SDA_PIN = 8;
-constexpr int RFID_SCL_PIN = 9;
+constexpr int PN532_IRQ_PIN = 1;
+constexpr int PN532_RESET_PIN = 2;
 
 // Motor a pasos
 // IN1 4

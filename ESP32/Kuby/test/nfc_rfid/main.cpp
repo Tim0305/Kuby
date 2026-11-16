@@ -2,19 +2,11 @@
 #include <Wire.h>
 #include <Adafruit_PN532.h>
 #include <ESP32Servo.h>
-
-// PN532
-#define SDA_PIN 8
-#define SCL_PIN 9
-#define PN532_IRQ 1
-#define PN532_RESET 2
-
-// Servo
-#define SERVO_PIN 10
+#include "pins.h"
 
 Adafruit_PN532 nfc(
-    PN532_IRQ,
-    PN532_RESET,
+    PN532_IRQ_PIN,
+    PN532_RESET_PIN,
     &Wire);
 
 Servo servoPuerta;
@@ -35,7 +27,7 @@ void iniciarNfc()
   Serial.println("Escaneando I2C (PN532 esperado en 0x24)...");
   bool encontrado = false;
   bool pn532Responde = false;
-  for (uint8_t direccion = 1; direccion < 127; ++direccion)
+  for (uint8_t direccion = 1; direccion < 127; direccion++)
   {
     Wire.beginTransmission(direccion);
     if (Wire.endTransmission() == 0)
@@ -59,7 +51,7 @@ void iniciarNfc()
   if (!version)
   {
     Serial.printf("Hay respuesta en 0x24, pero no se pudo leer el firmware. IRQ GPIO 1: %s\n",
-                  digitalRead(PN532_IRQ) == HIGH ? "HIGH" : "LOW");
+                  digitalRead(PN532_IRQ_PIN) == HIGH ? "HIGH" : "LOW");
     Serial.println("Revisa especialmente IRQ y RESET, ademas del modo I2C.");
     return;
   }
