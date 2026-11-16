@@ -1,0 +1,90 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "LEDs: Compilar",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "leds"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "LEDs: Cargar al ESP32",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "leds", "-t", "upload"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Stepper: Compilar",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "stepper"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Stepper: Cargar al ESP32",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "stepper", "-t", "upload"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Servo: Compilar",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "servo"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Servo: Cargar al ESP32",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "servo", "-t", "upload"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "NFC/RFID: Compilar",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "nfc"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "NFC/RFID: Cargar al ESP32",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "nfc", "-t", "upload"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "RFID y servo: Compilar",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "rfid"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "RFID y servo: Cargar al ESP32",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "rfid", "-t", "upload"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}
