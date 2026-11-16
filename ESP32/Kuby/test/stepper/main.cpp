@@ -1,10 +1,6 @@
 #include <Arduino.h>
 #include <Stepper.h>
-
-constexpr int MOTOR_IN1_PIN = 4;
-constexpr int MOTOR_IN2_PIN = 5;
-constexpr int MOTOR_IN3_PIN = 6;
-constexpr int MOTOR_IN4_PIN = 7;
+#include "pins.h"
 
 const int PASOS_VUELTA = 2048;
 

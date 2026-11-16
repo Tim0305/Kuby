@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <ESP32Servo.h>
+#include "pins.h"
 
-constexpr int SERVO_PIN = 10;
 Servo servo;
 
 void setup()

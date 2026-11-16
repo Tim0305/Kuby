@@ -2,6 +2,7 @@
 #include <ESP_I2S.h>
 #include <ESP_SR.h>
 #include <esp_partition.h>
+#include "pins.h"
 
 #if !CONFIG_IDF_TARGET_ESP32S3 || !CONFIG_MODEL_IN_FLASH
 #error "Selecciona el entorno microfono con Arduino-ESP32 3.3.12 y ESP-SR en flash."
@@ -11,9 +12,9 @@
 #endif
 
 // INMP441: VDD a 3.3 V; GND y L/R a GND (canal izquierdo).
-const int I2S_SCK = 42;
-const int I2S_WS = 41;
-const int I2S_SD = 47;
+const int I2S_SCK = MIC_SCK_PIN;
+const int I2S_WS = MIC_WS_PIN;
+const int I2S_SD = MIC_SD_PIN;
 const uint32_t SAMPLE_RATE = 16000;
 
 I2SClass microfono;
