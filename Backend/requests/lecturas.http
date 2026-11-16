@@ -1,0 +1,149 @@
+@host = http://localhost:3001
+@deviceKey = {{$dotenv SENSOR_API_KEY}}
+@espacioId = 6
+
+############ A. ESCRITURA (lo que hará el ESP32) ############
+
+### S1 Temperatura
+# Esperado: 201 { "id": n }
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 24.5 }
+
+### S2 Humedad
+# Esperado: 201
+POST {{host}}/api/lecturas/humedad
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 55.2 }
+
+### S3 Proximidad con true
+# Esperado: 201. En la base, deteccion = 1
+POST {{host}}/api/lecturas/proximidad
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": true }
+
+### S4 Proximidad con 0
+# Esperado: 201. En la base, deteccion = 0
+POST {{host}}/api/lecturas/proximidad
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 0 }
+
+### S5 Sin clave
+# Esperado: 401
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+
+{ "id_espacio": {{espacioId}}, "valor": 24.5 }
+
+### S6 Sensor que no existe
+# Esperado: 404
+POST {{host}}/api/lecturas/presion
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 1 }
+
+### S7 Humedad fuera de rango
+# Esperado: 400
+POST {{host}}/api/lecturas/humedad
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 150 }
+
+### S8 Valor que no es número
+# Esperado: 400
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": "abc" }
+
+### S9 Campo de más
+# Esperado: 400
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "valor": 24.5, "id_usuario": 1 }
+
+### S10 Falta id_espacio
+# Esperado: 400
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "valor": 24.5 }
+
+### S11 Cubículo que no existe
+# Esperado: 404
+POST {{host}}/api/lecturas/temperatura
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": 999999, "valor": 24.5 }
+
+### S12 Comprobación: validar accesos sigue sin pedir cookie
+# Esperado: 200 con acceso:false y motivo credencial_invalida (NO un 401)
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-NO-EXISTE" }
+
+############ B. LECTURA (frontend) ############
+
+### Login usuario
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000002", "password": "Contrasena123" }
+
+### G1 Última temperatura por cubículo
+# Esperado: 200, incluye tu cubículo con valor 24.5
+GET {{host}}/api/lecturas/temperatura/ultima
+
+### G2 Proximidad reciente
+# Esperado: 200, primero valor 0 y luego 1 (la más nueva primero)
+GET {{host}}/api/lecturas/proximidad/recientes?limite=3
+
+### G3 Filtrar por cubículo
+# Esperado: 200, todas con tu id_espacio
+GET {{host}}/api/lecturas/humedad/recientes?id_espacio={{espacioId}}
+
+### G4 Límite inválido
+# Esperado: 400
+GET {{host}}/api/lecturas/humedad/recientes?limite=0
+
+### G5 Estado del cubículo (endpoint de espacios)
+# Esperado: 200, con temperatura, humedad y proximidad
+GET {{host}}/api/espacios/{{espacioId}}/estado
+
+### G6 Resumen como usuario
+# Esperado: 403
+GET {{host}}/api/resumen
+
+### Login admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+### G7 Resumen como admin
+# Esperado: 200 { usuarios, espacios, reservaciones, accesos }
+GET {{host}}/api/resumen
+
+### Logout
+POST {{host}}/api/auth/logout
+
+### G8 Sin sesión
+# Esperado: 401
+GET {{host}}/api/lecturas/temperatura/ultima

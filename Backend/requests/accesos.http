@@ -1,0 +1,243 @@
+@host = http://localhost:3001
+@deviceKey = {{$dotenv SENSOR_API_KEY}}
+@espacioId = 6
+
+############ A. VALIDAR (lo que hará el ESP32) ############
+
+### V1 Sin reservación
+# Esperado: 200 acceso:false, motivo sin_reservacion_vigente
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### >>> SQL-1
+
+### V2 QR con reservación vigente
+# Esperado: acceso:true. La reservación pasa a 'activa'
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### V3 RFID (reingreso)
+# Esperado: acceso:true. Sigue 'activa'
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "rfid", "credencial": "RFID-PRUEBA-001" }
+
+### V4 Credencial que no existe
+# Esperado: acceso:false, motivo credencial_invalida (id_usuario NULL en el historial)
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-NO-EXISTE" }
+
+### >>> SQL-2
+
+### V5 Credencial desactivada
+# Esperado: acceso:false, motivo credencial_inactiva
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### >>> SQL-3
+
+### V6 Usuario inactivo
+# Esperado: acceso:false, motivo usuario_inactivo
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### >>> SQL-4
+
+### V7 Cubículo en mantenimiento
+# Esperado: acceso:false, motivo espacio_no_disponible
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### >>> SQL-5
+
+### V8 Reservación liberada por no presentarse
+# Esperado: acceso:false, motivo reservacion_liberada. En la base queda 'liberada'
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### >>> SQL-6
+
+### V9 Reservación que ya terminó
+# Esperado: acceso:false, motivo sin_reservacion_vigente. En la base queda 'finalizada'
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### V10 Sin clave de dispositivo
+# Esperado: 401
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### V11 Clave incorrecta
+# Esperado: 401
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: clave-falsa
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### V12 Método facial (en pausa)
+# Esperado: 400
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "facial", "credencial": "x" }
+
+### V13 Cubículo que no existe
+# Esperado: 404
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": 999999, "metodo": "qr", "credencial": "QR-PRUEBA-001" }
+
+### V14 Campo de más
+# Esperado: 400
+POST {{host}}/api/accesos/validar
+Content-Type: application/json
+x-api-key: {{deviceKey}}
+
+{ "id_espacio": {{espacioId}}, "metodo": "qr", "credencial": "x", "id_usuario": 1 }
+
+############ B. CONSULTAR HISTORIAL ############
+
+### Login usuario
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000002", "password": "Contrasena123" }
+
+### G1 Historial propio
+# Esperado: 200 { datos, pagina, limite, total }. Todos con el mismo id_usuario; sin la fila de credencial_invalida
+GET {{host}}/api/accesos
+
+### G2 Solo denegados
+# Esperado: 200, todos "denegado"
+GET {{host}}/api/accesos?resultado=denegado
+
+### G3 Paginación
+# Esperado: 200, máximo 2 filas, pagina 2
+GET {{host}}/api/accesos?limite=2&pagina=2
+
+### G4 Límite excesivo
+# Esperado: 400
+GET {{host}}/api/accesos?limite=500
+
+### G5 Fecha inválida
+# Esperado: 400
+GET {{host}}/api/accesos?desde=abc
+
+### Login admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000001", "password": "Contrasena123" }
+
+### G6 Admin ve todo
+# Esperado: 200, incluye la fila de credencial_invalida (usuario null)
+GET {{host}}/api/accesos
+
+### G7 Admin filtra
+# Esperado: 200, solo permitidos de ese cubículo
+GET {{host}}/api/accesos?id_espacio={{espacioId}}&resultado=permitido
+
+### Logout
+POST {{host}}/api/auth/logout
+
+### G8 Sin sesión
+# Esperado: 401
+GET {{host}}/api/accesos
+
+############ C. RESERVACIONES (modificar y cancelar) ############
+
+### Login usuario
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "matricula": "A00000002", "password": "Contrasena123" }
+
+### R1 Crear reservación para mañana
+# Esperado: 201
+# @name crearRes
+POST {{host}}/api/reservaciones
+Content-Type: application/json
+
+{ "id_espacio": {{espacioId}}, "hora_inicio": "{{$datetime iso8601 24 h}}", "hora_fin": "{{$datetime iso8601 25 h}}" }
+
+### R2 Misma franja otra vez
+# Esperado: 409
+POST {{host}}/api/reservaciones
+Content-Type: application/json
+
+{ "id_espacio": {{espacioId}}, "hora_inicio": "{{$datetime iso8601 24 h}}", "hora_fin": "{{$datetime iso8601 25 h}}" }
+
+### R3 Crear en el pasado
+# Esperado: 400 "La hora de inicio ya pasó"
+POST {{host}}/api/reservaciones
+Content-Type: application/json
+
+{ "id_espacio": {{espacioId}}, "hora_inicio": "{{$datetime iso8601 -2 h}}", "hora_fin": "{{$datetime iso8601 -1 h}}" }
+
+### R4 Modificar horario
+# Esperado: 200
+PATCH {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
+Content-Type: application/json
+
+{ "hora_inicio": "{{$datetime iso8601 48 h}}", "hora_fin": "{{$datetime iso8601 49 h}}" }
+
+### R5 Fin antes que inicio
+# Esperado: 400
+PATCH {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
+Content-Type: application/json
+
+{ "hora_inicio": "{{$datetime iso8601 48 h}}", "hora_fin": "{{$datetime iso8601 47 h}}" }
+
+### R6 Campo de más
+# Esperado: 400
+PATCH {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
+Content-Type: application/json
+
+{ "hora_inicio": "{{$datetime iso8601 48 h}}", "hora_fin": "{{$datetime iso8601 49 h}}", "id_espacio": 1 }
+
+### R7 Cancelar
+# Esperado: 204
+DELETE {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
+
+### R8 Modificar una cancelada
+# Esperado: 409
+PATCH {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
+Content-Type: application/json
+
+{ "hora_inicio": "{{$datetime iso8601 48 h}}", "hora_fin": "{{$datetime iso8601 49 h}}" }
+
+### R9 Cancelar otra vez
+# Esperado: 409
+DELETE {{host}}/api/reservaciones/{{crearRes.response.body.$.id_reservacion}}
