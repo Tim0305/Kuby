@@ -19,6 +19,8 @@ export function formatTime(value: string) {
 }
 
 const fieldLabels: Record<string, string> = {
+  minutos_antes: "Minutos antes del inicio",
+  minutos_despues: "Minutos después del inicio",
   nombre: "Nombre",
   apellido: "Apellido",
   matricula: "Matrícula",

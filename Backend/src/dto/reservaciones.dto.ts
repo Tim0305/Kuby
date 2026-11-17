@@ -23,6 +23,7 @@ export type ReservacionPublica = {
   hora_fin: Date;
   proposito: string | null;
   estado_reservacion: string;
+  check_in_en: Date | null;
   creada_en: Date;
 };
 
@@ -36,6 +37,7 @@ export function aReservacionPublica(f: RowDataPacket): ReservacionPublica {
     hora_fin: f.hora_fin,
     proposito: f.proposito ?? null,
     estado_reservacion: f.estado_reservacion,
+    check_in_en: f.check_in_en ?? null,
     creada_en: f.creada_en,
   };
 }

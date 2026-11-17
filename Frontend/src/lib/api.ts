@@ -119,7 +119,9 @@ async function request<T = unknown>(
       }
     }
     if (response.status === 401 && !path.startsWith("/auth/")) {
-      window.location.replace("/login")
+      const current = window.location.pathname ?? ""
+      window.location.replace(current.startsWith("/check-in/")
+        ? `/login?next=${encodeURIComponent(current)}` : "/login")
     }
     throw new ApiError(response.status, message, fields)
   }
@@ -240,6 +242,7 @@ export type Reservacion = {
   hora_inicio: string
   hora_fin: string
   estado_reservacion: EstadoReservacion
+  check_in_en: string | null
   creada_en: string
 }
 export type Horario = { hora_inicio: string; hora_fin: string }
@@ -328,6 +331,24 @@ export const updateReservation = (id: number, horario: Horario) =>
   )
 export const cancelReservation = (id: number) =>
   request<void>(`/reservaciones/${id}`, { method: "DELETE" })
+
+export type ConfiguracionCheckIn = { minutos_antes: number; minutos_despues: number }
+export type CubiculoQR = { url: string; svg: string }
+export type CheckInContext = {
+  espacio: Pick<Espacio, "id_espacio" | "nombre_espacio" | "ubicacion" | "estado_espacio">
+  configuracion: ConfiguracionCheckIn
+  reservaciones: Reservacion[]
+}
+export const getCheckInSettings = (signal?: AbortSignal) =>
+  request<ConfiguracionCheckIn>("/check-in/configuracion", { signal })
+export const saveCheckInSettings = (data: ConfiguracionCheckIn) =>
+  request<ConfiguracionCheckIn>("/check-in/configuracion", json("PUT", data))
+export const getSpaceQR = (id: number, signal?: AbortSignal) =>
+  request<CubiculoQR>(`/espacios/${id}/qr`, { signal })
+export const getCheckInContext = (token: string, signal?: AbortSignal) =>
+  request<CheckInContext>(`/check-in/${encodeURIComponent(token)}`, { signal })
+export const confirmCheckIn = (token: string, id_reservacion: number) =>
+  request<Reservacion>(`/check-in/${encodeURIComponent(token)}`, json("POST", { id_reservacion }))
 
 export async function getCurrentReservation(
   signal?: AbortSignal

@@ -13,6 +13,7 @@ import type { Usuario } from "@/lib/api"
 import { authRedirect } from "@/lib/auth-routing"
 
 const App = lazy(() => import("@/App"))
+const CheckInPage = lazy(() => import("@/features/check-in"))
 
 type Session =
   | { status: "loading" }
@@ -28,7 +29,7 @@ export default function AppRoot() {
 
     function finish(user: Usuario | null) {
       if (controller.signal.aborted) return
-      const redirect = authRedirect(window.location.pathname, user)
+      const redirect = authRedirect(window.location.pathname, user, window.location.search)
       if (redirect) {
         window.location.replace(redirect)
       } else {
@@ -119,7 +120,9 @@ export default function AppRoot() {
         </AuthShell>
       }
     >
-      <App user={session.user} />
+      {window.location.pathname.startsWith("/check-in/")
+        ? <CheckInPage user={session.user} />
+        : <App user={session.user} />}
     </Suspense>
   )
 }

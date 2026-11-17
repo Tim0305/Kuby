@@ -10,10 +10,12 @@ import { reservacionesRouter } from "./routes/reservaciones.routes.js";
 import { accesosRouter } from "./routes/accesos.routes.js";
 import { iniciarTareaEstados } from "./services/reservaciones.js";
 import { dispositivosRouter } from "./routes/dispositivos.routes.js";
+import { checkInRouter } from "./routes/check-in.routes.js";
+import { config } from "./config.js";
 
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -21,6 +23,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/usuarios", usuariosRouter);   
 app.use("/api", lecturasRouter);
 app.use("/api/reservaciones", reservacionesRouter); 
+app.use("/api/check-in", checkInRouter);
 app.use("/api/espacios", dispositivosRouter);
 app.use("/api/espacios", espaciosRouter);
 app.use("/api/accesos", accesosRouter); // <- Nueva ruta

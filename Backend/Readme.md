@@ -13,7 +13,7 @@ API REST de Kuby: usuarios, cubículos, reservaciones, historial de accesos y le
 
 ### Pasos
 1. Crear la base `kuby_db` e importar `kuby_db.sql`.
-2. Correr, en orden, los scripts de `db/` que todavía no estén aplicados (ver más abajo).
+2. Aplicar las migraciones pendientes de `db/migrations/` antes de iniciar el backend (ver `db/Readme.md`).
 3. Copiar `.env.example` a `.env` y llenarlo.
 4. `npm install`
 5. `npm run dev` (recarga solo al guardar; si cambias el `.env`, reinícialo).
@@ -31,6 +31,7 @@ Debe aparecer `API en http://localhost:3001`. Si falta una variable de entorno, 
 | `DB_NAME` | `kuby_db` |
 | `JWT_SECRET` | Cadena aleatoria larga para firmar las sesiones |
 | `SENSOR_API_KEY` | Clave compartida con los dispositivos (ESP32) |
+| `FRONTEND_URL` | Origen público del frontend, sin ruta; se usa para los QR y CORS. Por defecto `http://localhost:5173` solo para desarrollo local |
 
 Para generar `JWT_SECRET` y `SENSOR_API_KEY`:
 
@@ -40,15 +41,13 @@ node -p "require('crypto').randomBytes(48).toString('hex')"
 
 El `.env` **nunca se sube al repo**. `.env.example` solo lleva los nombres, sin valores.
 
-### Scripts de base de datos (`db/`)
+### Migraciones de base de datos (`db/migrations/`)
 
 | Script | Qué hace |
 |---|---|
-| `001_roles.sql` | Inserta los roles `admin` y `usuario` |
-| `002_foto_mediumblob.sql` | Amplía `usuarios.foto` a `MEDIUMBLOB` |
-| `003_estados_reservacion.sql` | Agrega el estado `liberada` y deja `activo` como estado por defecto de los espacios |
+| `001_check_in.sql` | Genera identificadores QR para los cubículos existentes, exige identificadores únicos, agrega `reservaciones.check_in_en` y crea la configuración persistente de check-in |
 
-El dump `kuby_db.sql` puede ya traer algunos de estos cambios. Corre solo los que falten; el `003` es necesario si el dump no incluye `liberada`.
+El dump `kuby_db.sql` es la base histórica. La migración se aplica una sola vez después de importarlo; no vuelvas a importar el dump sobre una base en uso. Las reservaciones históricas conservan su estado y `check_in_en = NULL`: no se inventan horas de llegada.
 
 ### Primer administrador
 1. Regístrate con `POST /api/auth/signup`.
@@ -62,6 +61,7 @@ WHERE matricula = 'TU_MATRICULA';
 
 ### Pruebas y revisión de tipos
 - `npx tsc --noEmit` revisa los tipos sin generar archivos.
+- `npm test` valida los DTO. Para las pruebas reales de integración, define `CHECK_IN_TEST_DB=1` y ejecuta `npm test`. Usa las credenciales de `.env` para crear y eliminar una base temporal `kuby_checkin_test_*`; requiere permisos de creación de bases y nunca modifica la base de la aplicación.
 - En `requests/` hay archivos `.http` para la extensión **REST Client** de VS Code, con el resultado esperado de cada petición. Para los que usan la clave de dispositivo, crea `requests/.env` (ignorado por git) con `SENSOR_API_KEY=` y el mismo valor del `.env` principal.
 - Usa solo datos de prueba. No subas fotos reales a `requests/`.
 
@@ -105,14 +105,15 @@ Los parámetros de URL inválidos responden `{ "error": "Parámetros inválidos"
 | Estado | Significado |
 |---|---|
 | `creada` | Reservada, todavía no se ha entrado |
-| `activa` | Ya hubo un primer acceso permitido |
+| `activa` | Se confirmó la llegada mediante el QR del cubículo |
 | `finalizada` | Llegó la hora de fin de una reservación que se usó |
-| `liberada` | Pasaron 10 minutos del inicio sin que nadie entrara; el horario queda libre |
+| `liberada` | Venció la ventana configurada sin confirmar llegada; el horario queda libre |
 | `cancelada` | Cancelada por el dueño o un admin |
 
 Reglas:
-- Se puede entrar desde la hora de inicio hasta la de fin.
-- La **primera entrada** debe hacerse en los primeros 10 minutos desde el inicio. Si no, pasa a `liberada`. Después de la primera entrada se puede volver a entrar hasta la hora de fin.
+- El check-in se confirma desde `minutos_antes` antes del inicio hasta `minutos_despues` después (ambos límites incluidos), siempre antes de la hora de fin. Por defecto: 0 minutos antes y 10 después.
+- La confirmación anticipada no adelanta el acceso físico: los dispositivos permiten entrar desde el inicio y antes del fin, después del check-in. Se puede volver a entrar durante ese horario.
+- Los administradores guardan la ventana en el dashboard: ambos valores son enteros de 0 a 180. Los cambios se aplican a reservaciones pendientes, sin revivir las ya liberadas. La tarea de liberación y el check-in usan la misma configuración persistente y el reloj de la base.
 - Solo se puede **modificar** una reservación en estado `creada`, y el nuevo horario no debe empalmarse con otra.
 - Solo se puede **cancelar** en estado `creada` o `activa`.
 - Los estados `liberada` y `finalizada` se actualizan solos, con una tarea que corre cada minuto.
@@ -214,6 +215,7 @@ Todo exige sesión. Escribir es solo de admin.
 | GET | `/api/espacios` | Sesión | Lista de cubículos |
 | GET | `/api/espacios/:id` | Sesión | Un cubículo |
 | GET | `/api/espacios/:id/estado` | Sesión | Última lectura de cada sensor del cubículo |
+| GET | `/api/espacios/:id/qr` | Admin | Devuelve `{ url, svg }`; con `?descargar=1` descarga el SVG como archivo adjunto |
 | POST | `/api/espacios` | Admin | Crear cubículo |
 | PATCH | `/api/espacios/:id` | Admin | Modificar cubículo |
 | DELETE | `/api/espacios/:id` | Admin | Baja lógica (`estado_espacio = inactivo`) |
@@ -308,11 +310,28 @@ Todo exige sesión. Cada usuario ve y maneja las suyas; el admin ve todas.
 
 **Actual.** `200` con una reservación, o `404` con `{ "mensaje": "No hay reservaciones activas" }` (el frontend muestra el logo de Kuby en ese caso).
 
+### Check-in — `/api/check-in`
+
+Todas las rutas requieren sesión activa. Las reservaciones públicas incluyen `check_in_en` (ISO 8601 o `null`).
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/check-in/configuracion` | Sesión | `{ minutos_antes, minutos_despues }` guardados |
+| PUT | `/api/check-in/configuracion` | Admin / superadmin | Reemplaza ambos valores; enteros entre 0 y 180, sin campos adicionales |
+| GET | `/api/check-in/:token` | Sesión | Cubículo, configuración y reservaciones no terminadas del usuario en ese cubículo; no cambia estados |
+| POST | `/api/check-in/:token` | Sesión | `{ "id_reservacion": 5 }`; confirma la propia reservación en ese cubículo |
+
+La confirmación valida el QR, cubículo activo, dueño, estado `creada`, ausencia de check-in y ventana vigente. Devuelve la reservación `activa` con `check_in_en`. `400`: token/body inválido; `401`: sesión inválida; `404`: QR desconocido o reservación que no pertenece al usuario/cubículo; `409`: estado, disponibilidad o tiempo inválido. Dos escaneos simultáneos generan una sola confirmación y una sola entrada en `historial_accesos`; cualquier fallo al guardar revierte ambos cambios.
+
+Los códigos identifican cubículos, no personas, y son distintos de `credenciales_qr` del ESP32. El QR se genera localmente, sin servicios externos, y lleva a `/check-in/:token`. El frontend conserva ese destino al iniciar sesión. Los identificadores no cambian al editar o desactivar un cubículo. Un QR estático se puede fotografiar o compartir y **no demuestra presencia física**; no es una credencial ni evita el control de sesión, propiedad y horario.
+
+Configura `FRONTEND_URL` con el dominio HTTPS estable antes de imprimir los códigos. En desarrollo móvil usa un origen accesible desde el teléfono, ejecuta Vite con `--host 0.0.0.0` y conecta ambos dispositivos a la misma red; `localhost` en el teléfono apunta al propio teléfono. El frontend necesita servir las rutas `/check-in/*`, `/login` y `/signup` mediante el fallback de la SPA y reenviar `/api` al backend. Mantén el dominio estable para conservar válidos los QR impresos.
+
 ---
 
 ## Historial de accesos — `/api/accesos`
 
-El historial se crea solo cuando un dispositivo valida un intento de entrada (ver "API para dispositivos"). Se consulta con sesión.
+El historial registra las confirmaciones QR y los intentos de acceso validados por dispositivos (ver "API para dispositivos"). Se consulta con sesión.
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
@@ -430,7 +449,8 @@ El nodo solo necesita revisar `acceso`. Si es `false`, `motivo` indica la causa:
 | `credencial_inactiva` | La credencial fue desactivada |
 | `usuario_inactivo` | El usuario está dado de baja |
 | `espacio_no_disponible` | El cubículo no está activo (por ejemplo, en mantenimiento) |
-| `reservacion_liberada` | Tenía reservación, pero se liberó por no entrar en los primeros 10 minutos |
+| `reservacion_liberada` | Tenía reservación, pero se liberó por no confirmar dentro de la ventana configurada |
+| `check_in_requerido` | Debe confirmar su llegada con el QR del cubículo antes del acceso físico |
 | `sin_reservacion_vigente` | No tiene reservación en este cubículo en este momento |
 
 Otros códigos: `404` si el cubículo no existe. Cada intento (permitido o denegado) queda registrado en el historial. Ante cualquier error o falta de respuesta, el nodo debe **negar** el acceso.

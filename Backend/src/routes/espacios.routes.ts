@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
+import QRCode from "qrcode";
+import { config } from "../config.js";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
@@ -31,6 +34,26 @@ espaciosRouter.get("/:id", validarId, async (req, res) => {
     return;
   }
   res.json(aEspacioPublico(rows[0]));
+});
+
+// The stable URL is generated locally; no QR service receives cubicle/user data.
+espaciosRouter.get("/:id/qr", requireAdmin, validarId, async (req, res) => {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT token_check_in FROM espacios WHERE id_espacio = ?",
+    [Number(req.params.id)]
+  );
+  if (!rows[0]) {
+    res.status(404).json({ error: "Espacio no encontrado" });
+    return;
+  }
+  const url = `${config.frontendUrl}/check-in/${rows[0].token_check_in}`;
+  const svg = await QRCode.toString(url, { type: "svg", errorCorrectionLevel: "M", margin: 4, width: 512 });
+  res.set("Cache-Control", "no-store");
+  if (req.query.descargar === "1") {
+    res.attachment(`kuby-cubiculo-${Number(req.params.id)}.svg`).type("image/svg+xml").send(svg);
+    return;
+  }
+  res.json({ url, svg });
 });
 
 // ---------- Obtener último estado de sensores del espacio ----------
@@ -66,9 +89,9 @@ espaciosRouter.post("/", requireAdmin, validarBody(CrearEspacioDto), async (req,
   const { nombre_espacio, ubicacion, capacidad, ip_nodo_esp32, estado_espacio } = req.body as CrearEspacioDto;
 
   const [resultado] = await pool.query<ResultSetHeader>(
-    `INSERT INTO espacios (nombre_espacio, ubicacion, capacidad, ip_nodo_esp32, estado_espacio)
-     VALUES (?, ?, ?, ?, ?)`,
-    [nombre_espacio, ubicacion ?? null, capacidad, ip_nodo_esp32 ?? null, estado_espacio]
+    `INSERT INTO espacios (nombre_espacio, ubicacion, capacidad, ip_nodo_esp32, estado_espacio, token_check_in)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [nombre_espacio, ubicacion ?? null, capacidad, ip_nodo_esp32 ?? null, estado_espacio, randomUUID()]
   );
   res.status(201).json({ id_espacio: resultado.insertId });
 });

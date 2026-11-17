@@ -19,11 +19,13 @@ import { AccessHistory } from "@/features/access-history"
 import { Profile } from "@/features/profile"
 import { CurrentReservation, Reservations } from "@/features/reservations"
 import { Spaces } from "@/features/spaces"
+import { CheckInSettings } from "@/features/check-in-tools"
 import { Users } from "@/features/users"
 import { RemoteState } from "@/features/shared"
 import { useRemote } from "@/hooks/use-remote"
 import {
   getCurrentReservation,
+  getCheckInSettings,
   getReservations,
   getSpaces,
   getSummary
@@ -59,6 +61,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
   const spaces = useRemote(getSpaces)
   const reservations = useRemote(getReservations, 60_000)
   const current = useRemote(getCurrentReservation, 60_000)
+  const checkInSettings = useRemote(getCheckInSettings, 60_000)
   const loadSummary = useCallback(
     (signal: AbortSignal) =>
       admin ? getSummary(signal) : Promise.resolve(null),
@@ -144,14 +147,15 @@ export default function App({ user: initialUser }: { user: Usuario }) {
               )}
             </div>
           )}
-          <CurrentReservation resource={current} />
+          <CurrentReservation resource={current} checkInSettings={checkInSettings.data} />
           <Spaces
             resource={spaces}
             admin={admin}
+            checkInSettings={checkInSettings.data}
             onBooked={() => {
               reservationsChanged()
               setNotice(
-                "Reservación confirmada. Registra tu entrada en los primeros 10 minutos de tu horario."
+                "Reservación confirmada, escanea el código QR del cubículo para registrar tu llegada."
               )
             }}
             onChange={() => {
@@ -165,6 +169,7 @@ export default function App({ user: initialUser }: { user: Usuario }) {
             admin={admin}
             onChange={reservationsChanged}
           />
+          {admin && <CheckInSettings resource={checkInSettings} />}
           {admin && (
             <Users
               currentUserId={user.id_usuario}

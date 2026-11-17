@@ -33,7 +33,7 @@ reservacionesRouter.get("/", async (req, res) => {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT r.id_reservacion, r.id_usuario, r.id_espacio, 
             r.fecha_hora_inicio AS hora_inicio, r.fecha_hora_fin AS hora_fin, 
-            NULL AS proposito, r.estado_reservacion, r.creado_en AS creada_en, 
+            NULL AS proposito, r.estado_reservacion, r.check_in_en, r.creado_en AS creada_en,
             e.nombre_espacio 
      FROM reservaciones r
      LEFT JOIN espacios e ON r.id_espacio = e.id_espacio
@@ -51,7 +51,7 @@ reservacionesRouter.get("/actual", async (req, res) => {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT r.id_reservacion, r.id_usuario, r.id_espacio, 
             r.fecha_hora_inicio AS hora_inicio, r.fecha_hora_fin AS hora_fin, 
-            NULL AS proposito, r.estado_reservacion, r.creado_en AS creada_en, 
+            NULL AS proposito, r.estado_reservacion, r.check_in_en, r.creado_en AS creada_en,
             e.nombre_espacio 
      FROM reservaciones r
      LEFT JOIN espacios e ON r.id_espacio = e.id_espacio

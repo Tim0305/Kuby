@@ -6,7 +6,13 @@ function requerida(nombre: string): string{
     return valor;
 }
 
+const frontendUrl = new URL(process.env.FRONTEND_URL || "http://localhost:5173");
+if (!["http:", "https:"].includes(frontendUrl.protocol) || frontendUrl.username || frontendUrl.password || frontendUrl.pathname !== "/" || frontendUrl.search || frontendUrl.hash) {
+    throw new Error("FRONTEND_URL debe ser un origen HTTP(S), sin ruta ni credenciales");
+}
+
 export const config = {
+    frontendUrl: frontendUrl.origin,
     db: {
         host: requerida("DB_HOST"),
         port: Number(requerida("DB_PORT")),

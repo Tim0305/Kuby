@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { MapPinIcon, PlusIcon, UsersIcon } from "@phosphor-icons/react"
+import { MapPinIcon, PlusIcon, QrCodeIcon, UsersIcon } from "@phosphor-icons/react"
 import {
   Button,
   Card,
@@ -9,7 +9,8 @@ import {
   Input
 } from "@/components/ui"
 import { createSpace, deactivateSpace, updateSpace } from "@/lib/api"
-import type { Espacio, EstadoEspacio } from "@/lib/api"
+import type { ConfiguracionCheckIn, Espacio, EstadoEspacio } from "@/lib/api"
+import { SpaceQRDialog } from "@/features/check-in-tools"
 import type { RemoteResult } from "@/hooks/use-remote"
 import { BookingDialog } from "@/features/reservations"
 import {
@@ -119,15 +120,18 @@ export function Spaces({
   resource,
   admin,
   onChange,
-  onBooked
+  onBooked,
+  checkInSettings
 }: {
   resource: RemoteResult<Espacio[]>
   admin: boolean
   onChange: () => void
   onBooked: () => void
+  checkInSettings?: ConfiguracionCheckIn
 }) {
   const [booking, setBooking] = useState<Espacio>()
   const [editor, setEditor] = useState<Espacio | "new">()
+  const [qr, setQR] = useState<Espacio>()
   return (
     <Section
       id="spaces"
@@ -185,6 +189,9 @@ export function Spaces({
                 </Button>
                 {admin && (
                   <>
+                    <Button variant="outline" className="min-h-11" onClick={() => setQR(space)}>
+                      <QrCodeIcon data-icon="inline-start" /> Ver QR
+                    </Button>
                     <Button variant="outline" className="flex-1 md:flex-none" onClick={() => setEditor(space)}>
                       Editar
                     </Button>
@@ -206,6 +213,7 @@ export function Spaces({
       {booking && (
         <BookingDialog
           space={booking}
+          checkInSettings={checkInSettings}
           onClose={() => setBooking(undefined)}
           onBooked={onBooked}
         />
@@ -217,6 +225,7 @@ export function Spaces({
           onChange={onChange}
         />
       )}
+      {qr && <SpaceQRDialog space={qr} onClose={() => setQR(undefined)} />}
     </Section>
   )
 }

@@ -12,6 +12,7 @@ const screenshotDirectory = fileURLToPath(
   new URL("../test-results/", import.meta.url)
 )
 const stamp = "2035-11-15T16:00:00.000Z"
+const cubicleToken = "550e8400-e29b-41d4-a716-446655440000"
 const png = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII=",
   "base64"
@@ -21,6 +22,8 @@ let requests = []
 
 function resetFixture() {
   fixture = {
+    checkInSettings: { minutos_antes: 15, minutos_despues: 20 },
+    checkInError: null,
     conflict: false,
     expired: false,
     users: [
@@ -134,6 +137,34 @@ const api = createHttpServer(async (req, res) => {
       return send(null, 204)
     }
     if (fixture.expired) return send({ error: "Sesión inválida o expirada" }, 401)
+    if (route === "/check-in/configuracion") {
+      if (req.method === "PUT") {
+        if (!admin) return send({ error: "Sin permisos" }, 403)
+        fixture.checkInSettings = data
+      }
+      return send(fixture.checkInSettings)
+    }
+    if (/^\/espacios\/\d+\/qr$/.test(route)) {
+      if (!admin) return send({ error: "Sin permisos" }, 403)
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><path fill="white" d="M0 0h512v512H0z"/><path d="M32 32h128v128H32z"/></svg>'
+      if (url.searchParams.get("descargar") === "1") {
+        res.writeHead(200, { "Content-Type": "image/svg+xml", "Content-Disposition": 'attachment; filename="kuby-cubiculo-1.svg"' })
+        return res.end(svg)
+      }
+      return send({ url: origin + `check-in/${cubicleToken}`, svg })
+    }
+    if (route.startsWith("/check-in/")) {
+      if (route !== `/check-in/${cubicleToken}`) return send({ error: "Este código QR no corresponde a un cubículo" }, 404)
+      if (req.method === "GET") return send({ espacio: fixture.spaces[0], configuracion: fixture.checkInSettings,
+        reservaciones: fixture.reservations.filter(r => r.id_usuario === userId && r.id_espacio === 1) })
+      if (fixture.checkInError) return send({ error: fixture.checkInError }, 409)
+      const reservation = fixture.reservations.find(r => r.id_reservacion === data.id_reservacion && r.id_usuario === userId && r.id_espacio === 1)
+      if (!reservation) return send({ error: "No tienes esa reservación en este cubículo" }, 404)
+      if (reservation.estado_reservacion !== "creada") return send({ error: "La entrada ya fue registrada" }, 409)
+      reservation.estado_reservacion = "activa"
+      reservation.check_in_en = stamp
+      return send(reservation)
+    }
     if (route === "/auth/me")
       return send(fixture.users.find((user) => user.id_usuario === userId))
     if (route === "/resumen")
@@ -322,7 +353,7 @@ before(async () => {
   })
   await vite.listen()
   origin = vite.resolvedUrls.local[0]
-  browser = await chromium.launch({ headless: true })
+  browser = await chromium.launch({ headless: true, channel: process.env.PLAYWRIGHT_CHANNEL })
   await mkdir(screenshotDirectory, { recursive: true })
 })
 
@@ -940,4 +971,94 @@ test('dashboard responsive audit keeps navigation and content usable at every br
     } finally { await context.close() }
   }
   if(auditDir)await writeFile(auditDir+'/measurements.json',JSON.stringify(measurements,null,2))
+})
+
+test("admin QR preview/download and persisted window controls work on mobile", { timeout: 60_000 }, async () => {
+  const { page, context, errors } = await openPage(true, { width: 390, height: 844 })
+  try {
+    const settings = page.locator("#check-in-settings")
+    await settings.getByLabel("Minutos antes del inicio", { exact: true }).fill("5")
+    await settings.getByLabel("Minutos después del inicio", { exact: true }).fill("35")
+    await settings.getByRole("button", { name: "Guardar horario de check-in", exact: true }).click()
+    await expect(settings.getByText("Horario de check-in guardado.", { exact: true })).toBeVisible()
+    assert.deepEqual(fixture.checkInSettings, { minutos_antes: 5, minutos_despues: 35 })
+    await page.reload()
+    await expect(settings.getByLabel("Minutos antes del inicio", { exact: true })).toHaveValue("5")
+    await expect(settings.getByLabel("Minutos después del inicio", { exact: true })).toHaveValue("35")
+    await page.locator("#spaces").getByRole("button", { name: "Ver QR", exact: true }).first().click()
+    const dialog = page.getByRole("dialog")
+    const image = dialog.getByRole("img", { name: "Código QR para registrar la llegada a Library One", exact: true })
+    await expect(image).toBeVisible()
+    assert.ok(await image.evaluate(img => img.complete && img.naturalWidth === 512))
+    const downloadLink = dialog.getByRole("button", { name: "Descargar código QR", exact: true })
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 10_000 }),
+      downloadLink.click()
+    ])
+    assert.equal(download.suggestedFilename(), "kuby-cubiculo-1.svg")
+    assert.equal(await download.failure(), null)
+    await dialog.screenshot({ path: screenshotDirectory + "qr-mobile.png" })
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    assert.deepEqual(errors, [])
+  } finally { await context.close() }
+})
+
+test("mobile check-in shows timing errors, success, recorded timestamp, and no duplicate action", { timeout: 60_000 }, async () => {
+  const { page, context, errors } = await openPage(false, { width: 320, height: 844 })
+  try {
+    await page.goto(origin + `check-in/${cubicleToken}`)
+    await expect(page.getByRole("heading", { name: "Confirma tu llegada", exact: true })).toBeVisible()
+    await expect(page.getByText(/desde 15 minutos antes hasta 20 minutos después/)).toBeVisible()
+    const confirm = page.getByRole("button", { name: "Confirmar mi llegada", exact: true })
+    fixture.checkInError = "Fuera del horario de check-in: vuelve dentro de la ventana permitida."
+    await confirm.click()
+    await expect(page.getByRole("alert")).toHaveText(fixture.checkInError)
+    await page.screenshot({ path: screenshotDirectory + "check-in-error-mobile.png", fullPage: true })
+    fixture.checkInError = null
+    await confirm.click()
+    await expect(page.getByRole("status")).toContainText("Tu llegada quedó registrada.")
+    await expect(page.locator("time")).toHaveAttribute("datetime", stamp)
+    await expect(confirm).toHaveCount(0)
+    await page.screenshot({ path: screenshotDirectory + "check-in-success-mobile.png" })
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    await page.reload()
+    await expect(page.getByText(/La entrada ya fue registrada/).first()).toBeVisible()
+    await expect(confirm).toHaveCount(0)
+    assert.deepEqual(errors, [])
+  } finally { await context.close() }
+})
+
+test("QR destination survives login and a session expiring during confirmation", { timeout: 60_000 }, async () => {
+  const { page, context } = await openPage()
+  let signedIn = false
+  const path = `/check-in/${cubicleToken}`
+  await page.route("**/api/auth/me", route => route.fulfill({ status: signedIn ? 200 : 401,
+    json: signedIn ? fixture.users[1] : { error: "No autenticado" } }))
+  await page.route("**/api/auth/login", route => { signedIn = true; return route.fulfill({ status: 204 }) })
+  try {
+    await page.goto(origin + path.slice(1))
+    await expect(page).toHaveURL(origin + `login?next=${encodeURIComponent(path)}`)
+    await page.getByLabel("Matrícula", { exact: true }).fill("A00002")
+    await page.getByLabel("Contraseña", { exact: true }).fill("Password123")
+    await page.getByRole("button", { name: "Iniciar sesión", exact: true }).click()
+    await expect(page).toHaveURL(origin + path.slice(1))
+    await expect(page.getByRole("button", { name: "Confirmar mi llegada", exact: true })).toBeVisible()
+    signedIn = false
+    fixture.expired = true
+    await page.getByRole("button", { name: "Confirmar mi llegada", exact: true }).click()
+    await expect(page).toHaveURL(origin + `login?next=${encodeURIComponent(path)}`)
+    await expect(page.getByRole("button", { name: "Iniciar sesión", exact: true })).toBeVisible()
+  } finally { await context.close() }
+})
+
+test("check-in handles an unknown cubicle QR and absence of the user's reservations", { timeout: 60_000 }, async () => {
+  const { page, context } = await openPage()
+  try {
+    await page.goto(origin + "check-in/550e8400-e29b-41d4-a716-446655440099")
+    await expect(page.getByRole("alert")).toContainText("no corresponde a un cubículo")
+    fixture.reservations = []
+    await page.goto(origin + `check-in/${cubicleToken}`)
+    await expect(page.getByRole("status")).toContainText("No tienes reservaciones vigentes o próximas")
+    await expect(page.getByRole("button", { name: "Confirmar mi llegada", exact: true })).toHaveCount(0)
+  } finally { await context.close() }
 })

@@ -14,7 +14,6 @@ type Decision = {
   motivo: string | null;
   id_usuario: number | null;
   id_reservacion: number | null;
-  activar: boolean; // true: la reservación pasa de 'creada' a 'activa'
 };
 
 function denegar(
@@ -22,13 +21,12 @@ function denegar(
   id_usuario: number | null = null,
   id_reservacion: number | null = null
 ): Decision {
-  return { resultado: "denegado", motivo, id_usuario, id_reservacion, activar: false };
+  return { resultado: "denegado", motivo, id_usuario, id_reservacion };
 }
 
 async function decidir(
   datos: ValidarAccesoDto,
-  estadoEspacio: string,
-  ahora: Date
+  estadoEspacio: string
 ): Promise<Decision> {
   const c = CREDENCIALES[datos.metodo];
 
@@ -53,17 +51,19 @@ async function decidir(
      FROM reservaciones
      WHERE id_usuario = ? AND id_espacio = ?
        AND estado_reservacion IN ('creada', 'activa')
-       AND fecha_hora_inicio <= ? AND fecha_hora_fin > ?
+       AND fecha_hora_inicio <= NOW(3) AND fecha_hora_fin > NOW(3)
      ORDER BY fecha_hora_inicio DESC LIMIT 1`,
-    [id_usuario, datos.id_espacio, ahora, ahora]
+    [id_usuario, datos.id_espacio]
   );
   if (vigentes[0]) {
+    if (vigentes[0].estado_reservacion === "creada") {
+      return denegar("check_in_requerido", id_usuario, vigentes[0].id_reservacion);
+    }
     return {
       resultado: "permitido",
       motivo: null,
       id_usuario,
       id_reservacion: vigentes[0].id_reservacion,
-      activar: vigentes[0].estado_reservacion === "creada",
     };
   }
 
@@ -71,9 +71,9 @@ async function decidir(
   const [liberadas] = await pool.query<RowDataPacket[]>(
     `SELECT id_reservacion FROM reservaciones
      WHERE id_usuario = ? AND id_espacio = ? AND estado_reservacion = 'liberada'
-       AND fecha_hora_inicio <= ? AND fecha_hora_fin > ?
+       AND fecha_hora_inicio <= NOW(3) AND fecha_hora_fin > NOW(3)
      LIMIT 1`,
-    [id_usuario, datos.id_espacio, ahora, ahora]
+    [id_usuario, datos.id_espacio]
   );
   if (liberadas[0]) {
     return denegar("reservacion_liberada", id_usuario, liberadas[0].id_reservacion);
@@ -92,7 +92,7 @@ export async function validarAcceso(datos: ValidarAccesoDto) {
   }
 
   await actualizarEstadosVencidos();
-  const decision = await decidir(datos, espacios[0].estado_espacio, new Date());
+  const decision = await decidir(datos, espacios[0].estado_espacio);
 
   const conn = await pool.getConnection();
   try {
@@ -110,13 +110,6 @@ export async function validarAcceso(datos: ValidarAccesoDto) {
         decision.id_reservacion,
       ]
     );
-    if (decision.activar) {
-      await conn.query(
-        `UPDATE reservaciones SET estado_reservacion = 'activa'
-         WHERE id_reservacion = ? AND estado_reservacion = 'creada'`,
-        [decision.id_reservacion]
-      );
-    }
     await conn.commit();
 
     return {

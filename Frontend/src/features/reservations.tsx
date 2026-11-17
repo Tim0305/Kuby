@@ -19,7 +19,8 @@ import {
   createReservation,
   updateReservation
 } from "@/lib/api"
-import type { Espacio, Reservacion } from "@/lib/api"
+import type { ConfiguracionCheckIn, Espacio, Reservacion } from "@/lib/api"
+import { CheckInWindow } from "@/features/check-in-tools"
 import type { RemoteResult } from "@/hooks/use-remote"
 import {
   bookingTimes,
@@ -72,11 +73,13 @@ function TimeFields({ reservation }: { reservation?: Reservacion }) {
 export function BookingDialog({
   space,
   onClose,
-  onBooked
+  onBooked,
+  checkInSettings
 }: {
   space: Espacio
   onClose: () => void
   onBooked: () => void
+  checkInSettings?: ConfiguracionCheckIn
 }) {
   return (
     <Modal
@@ -101,18 +104,18 @@ export function BookingDialog({
         <p className="text-sm text-muted-foreground">
           Hora local. La disponibilidad se verifica al confirmar.
         </p>
-        <p className="border-l-2 border-primary pl-3 text-sm">
-          Registra tu entrada en los primeros 10 minutos de tu horario para conservar tu reservación.
-        </p>
+        <CheckInWindow settings={checkInSettings} />
       </ActionForm>
     </Modal>
   )
 }
 
 export function CurrentReservation({
-  resource
+  resource,
+  checkInSettings
 }: {
   resource: RemoteResult<Reservacion | null>
+  checkInSettings?: ConfiguracionCheckIn
 }) {
   return (
     <Card className="gap-4 border-visit bg-visit py-6 text-visit-foreground">
@@ -140,9 +143,9 @@ export function CurrentReservation({
                 <LocalTime value={resource.data.hora_fin} />
               </p>
             </div>
-            <p className="max-w-[78ch] text-sm/[1.7] text-visit-muted">
-              Registra tu entrada en los primeros 10 minutos de tu horario. Puedes volver a entrar hasta que termine.
-            </p>
+            {resource.data.estado_reservacion === "creada"
+              ? <CheckInWindow settings={checkInSettings} />
+              : <p className="text-sm">Entrada registrada.{resource.data.check_in_en && <> <LocalTime value={resource.data.check_in_en} /></>}</p>}
           </>
         )}
         {resource.data === null && (
@@ -222,6 +225,7 @@ export function Reservations({
                   </TableCell>
                   <TableCell>
                     <Status value={reservation.estado_reservacion} />
+                    {reservation.check_in_en && <p className="mt-1 text-xs text-muted-foreground">Entrada: <LocalTime value={reservation.check_in_en} /></p>}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">

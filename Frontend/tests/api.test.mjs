@@ -18,6 +18,7 @@ async function loadModule(file) {
 
 const api = await loadModule("../src/lib/api.ts")
 const booking = await loadModule("../src/lib/booking.ts")
+const routing = await loadModule("../src/lib/auth-routing.ts")
 const originalFetch = globalThis.fetch
 const originalWindow = globalThis.window
 afterEach(() => {
@@ -222,4 +223,25 @@ test("network, HTTP fallback, and malformed response errors are Spanish", async 
   }
   globalThis.fetch = async () => new Response("invalid JSON", { status: 200 })
   await assert.rejects(api.getSpaces(), { message: "No se pudieron cargar los datos. Inténtalo de nuevo." })
+})
+
+test("check-in destinations survive authentication and reject external return URLs", () => {
+  const path = "/check-in/550e8400-e29b-41d4-a716-446655440000"
+  const search = `?next=${encodeURIComponent(path)}`
+  assert.equal(routing.authRedirect(path, null), `/login${search}`)
+  assert.equal(routing.authRedirect(path, { rol: "usuario" }), null)
+  assert.equal(routing.authRedirect(path, { rol: "admin" }), null)
+  assert.equal(routing.authRedirect("/login", { rol: "usuario" }, search), path)
+  for (const target of ["https://evil.example", "//evil.example", "/admin", "/check-in/invalid", path + "?next=evil", path + "/../admin"]) {
+    assert.equal(routing.checkInReturn(`?next=${encodeURIComponent(target)}`), null)
+  }
+})
+
+test("an expired check-in session retains its QR destination", async () => {
+  const path = "/check-in/550e8400-e29b-41d4-a716-446655440000"
+  const redirects = []
+  globalThis.window = { location: { pathname: path, replace: (url) => redirects.push(url) } }
+  respond({ error: "Sesión expirada" }, 401)
+  await assert.rejects(api.confirmCheckIn(path.split("/").pop(), 1), { status: 401 })
+  assert.deepEqual(redirects, [`/login?next=${encodeURIComponent(path)}`])
 })

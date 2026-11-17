@@ -11,6 +11,7 @@ import {
   PulseIcon,
   UsersIcon,
   ListChecksIcon,
+  QrCodeIcon,
   UserIcon
 } from "@phosphor-icons/react"
 import {
@@ -60,6 +61,7 @@ function Navigation({
         { title: "Resumen", href: "#overview", icon: HouseIcon },
         { title: "Cubículos", href: "#spaces", icon: SquaresFourIcon },
         { title: "Reservaciones", href: "#reservations", icon: CalendarIcon },
+        { title: "Check-in", href: "#check-in-settings", icon: QrCodeIcon },
         { title: "Usuarios", href: "#users", icon: UsersIcon }
       ]
     : [

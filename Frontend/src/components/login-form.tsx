@@ -2,6 +2,7 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { ApiError } from "@/lib/api"
 import { PasswordInput } from "@/components/password-input"
+import { checkInReturn } from "@/lib/auth-routing"
 import {
   Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
   Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input,
@@ -11,6 +12,7 @@ export type AuthFormProps = { onLogin: (matricula: string, password: string) => 
 
 // Adapted from shadcn login-03 for the existing student ID authentication API.
 export function LoginForm({ onLogin }: AuthFormProps) {
+  const next = checkInReturn(window.location.search)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fields, setFields] = useState<Record<string, string>>({})
@@ -40,7 +42,7 @@ export function LoginForm({ onLogin }: AuthFormProps) {
     <Card className="[--card-spacing:24px] max-md:[--card-spacing:20px] max-[359px]:[--card-spacing:16px]">
       <CardHeader className="gap-2 text-center">
         <CardTitle role="heading" aria-level={1} className="text-2xl/tight font-medium tracking-[-0.035em]">Inicia sesión</CardTitle>
-        <CardDescription>Reserva cubículos en tu campus.</CardDescription>
+        <CardDescription>{next ? "Inicia sesión para confirmar tu llegada al cubículo." : "Reserva cubículos en tu campus."}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} aria-busy={pending}>
@@ -58,7 +60,7 @@ export function LoginForm({ onLogin }: AuthFormProps) {
             <Field>
               <FieldError>{error}</FieldError>
               <Button type="submit" disabled={pending} className="w-full">{pending ? "Iniciando sesión..." : "Iniciar sesión"}</Button>
-              <FieldDescription className="text-center">¿No tienes cuenta? <a href="/signup">Crear cuenta</a></FieldDescription>
+              <FieldDescription className="text-center">¿No tienes cuenta? <a href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}>Crear cuenta</a></FieldDescription>
             </Field>
           </FieldGroup>
         </form>

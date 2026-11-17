@@ -28,6 +28,7 @@ import {
 } from "@/features/shared"
 
 const denialReasons: Record<string, string> = {
+  check_in_requerido: "Confirma con el QR del cubículo",
   credencial_invalida: "Credencial desconocida",
   credencial_inactiva: "Credencial inactiva",
   usuario_inactivo: "Usuario inactivo",

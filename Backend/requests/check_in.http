@@ -1,0 +1,26 @@
+@host = http://localhost:3001
+@idEspacio = 1
+@idReservacion = 1
+# Copy the UUID from the admin QR's url; do not paste a personal credential QR.
+@tokenCubiculo = 00000000-0000-4000-8000-000000000000
+
+### With an admin/superadmin session: view/download the permanent cubicle QR
+GET {{host}}/api/espacios/{{idEspacio}}/qr
+
+### All authenticated users can read the current window
+GET {{host}}/api/check-in/configuracion
+
+### Admin only: persist both values (integers 0..180)
+PUT {{host}}/api/check-in/configuracion
+Content-Type: application/json
+
+{"minutos_antes":15,"minutos_despues":20}
+
+### With the reservation owner's session: opening the QR has no side effects
+GET {{host}}/api/check-in/{{tokenCubiculo}}
+
+### Confirm: 200 with activa and check_in_en; retry returns 409
+POST {{host}}/api/check-in/{{tokenCubiculo}}
+Content-Type: application/json
+
+{"id_reservacion":{{idReservacion}}}

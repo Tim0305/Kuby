@@ -3,6 +3,7 @@ import type { FormEvent } from "react"
 import { ApiError, signup } from "@/lib/api"
 import type { AuthFormProps } from "@/components/login-form"
 import { PasswordInput } from "@/components/password-input"
+import { checkInReturn } from "@/lib/auth-routing"
 import {
   Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
   Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input,
@@ -10,6 +11,7 @@ import {
 
 // Adapted from shadcn signup-03; account roles are assigned by the backend.
 export function SignupForm({ onLogin }: AuthFormProps) {
+  const next = checkInReturn(window.location.search)
   const [pending, setPending] = useState(false)
   const [created, setCreated] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,7 +93,7 @@ export function SignupForm({ onLogin }: AuthFormProps) {
               {created && <p role="status" className="text-[13px] text-muted-foreground">Cuenta creada. Inicia sesión para continuar.</p>}
               <FieldError>{error}</FieldError>
               <Button type="submit" disabled={pending} className="w-full">{pending ? (created ? "Iniciando sesión..." : "Creando cuenta...") : (created ? "Iniciar sesión" : "Crear cuenta")}</Button>
-              <FieldDescription className="text-center">¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a></FieldDescription>
+              <FieldDescription className="text-center">¿Ya tienes cuenta? <a href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}>Iniciar sesión</a></FieldDescription>
             </Field>
           </FieldGroup>
         </form>
