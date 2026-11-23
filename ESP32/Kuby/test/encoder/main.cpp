@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
-
-constexpr int ENCODER_CLK_PIN = 21;
-constexpr int ENCODER_DT_PIN = 16;
+#include "pins.h"
 
 ESP32Encoder encoder;
 
@@ -11,6 +9,7 @@ long previousValue = 0;
 void setup()
 {
     Serial.begin(115200);
+    pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
 
     ESP32Encoder::useInternalWeakPullResistors = puType::up;
 
@@ -30,5 +29,11 @@ void loop()
     {
         Serial.printf("Contador: %ld\n", currentValue);
         previousValue = currentValue;
+    }
+
+    if (digitalRead(ENCODER_SW_PIN) == LOW)
+    {
+        Serial.println("Presionado");
+        delay(200);
     }
 }

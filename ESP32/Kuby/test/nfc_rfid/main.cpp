@@ -12,7 +12,7 @@ void setup()
 
   Serial.println("Iniciando I2C...");
 
-  Wire.begin(SDA_PIN, SCL_PIN, 100000);
+  Wire.begin(PN532_SDA_PIN, PN532_SCL_PIN, 100000);
 
   Serial.println("Escaneando dispositivos...");
 

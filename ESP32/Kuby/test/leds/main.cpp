@@ -2,8 +2,6 @@
 #include <FastLED.h>
 #include "pins.h"
 
-#define DHT_TYPE DHT11
-const int LED_PIN = LED_PIN;
 const int NUM_LEDS = 5;
 CRGB leds[NUM_LEDS];
 

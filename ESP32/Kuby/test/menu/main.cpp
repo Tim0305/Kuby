@@ -7,8 +7,8 @@
 
 // -------------------- OLED --------------------
 
-constexpr int OLED_SCL = SCL_PIN;
-constexpr int OLED_SDA = SDA_PIN;
+constexpr int OLED_SCL = OLED_SCL_PIN;
+constexpr int OLED_SDA = OLED_SDA_PIN;
 constexpr int OLED_ADDRESS = 0x3C;
 
 SSD1306Wire display(
@@ -18,10 +18,6 @@ SSD1306Wire display(
     GEOMETRY_128_64);
 
 // -------------------- ENCODER --------------------
-
-constexpr int ENCODER_SW_PIN = 3;
-constexpr int ENCODER_DT_PIN = 16;
-constexpr int ENCODER_CLK_PIN = 21;
 
 ESP32Encoder encoder;
 

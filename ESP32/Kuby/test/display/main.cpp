@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "SSD1306Wire.h"
+#include "pins.h"
 
-#define OLED_SDA 8
-#define OLED_SCL 9
+#define OLED_SDA OLED_SDA_PIN
+#define OLED_SCL OLED_SCL_PIN
 #define OLED_ADDRESS 0x3C
 
 SSD1306Wire display(
