@@ -40,6 +40,7 @@ import {
   Status,
   text
 } from "@/features/shared"
+import { ReservationLighting } from "@/features/reservation-lighting"
 
 function TimeFields({ reservation }: { reservation?: Reservacion }) {
   return (
@@ -143,6 +144,7 @@ export function CurrentReservation({
                 <LocalTime value={resource.data.hora_fin} />
               </p>
             </div>
+            <ReservationLighting reservation={resource.data} />
             {resource.data.estado_reservacion === "creada"
               ? <CheckInWindow settings={checkInSettings} />
               : <p className="text-sm">Entrada registrada.{resource.data.check_in_en && <> <LocalTime value={resource.data.check_in_en} /></>}</p>}

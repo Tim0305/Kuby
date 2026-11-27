@@ -83,9 +83,7 @@ function Navigation({
             <SidebarMenuButton
               render={<a href={admin ? "/admin" : "/"} />}
               tooltip="Kuby"
-              className="h-12 px-2 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:p-0"
-            >
-              <SquaresFourIcon className="size-5 text-brand-icon" />
+              className="h-12 px-2">
               <img
                 src="/assets/LogoKuby.png"
                 alt="Kuby"

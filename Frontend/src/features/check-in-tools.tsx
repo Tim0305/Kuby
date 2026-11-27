@@ -8,8 +8,8 @@ import { ActionForm, FormField, Modal, RemoteState, Section } from "@/features/s
 
 export function CheckInWindow({ settings }: { settings?: ConfiguracionCheckIn }) {
   return <p className="text-sm/[1.7]">
-    Escanea el código QR del cubículo y confirma tu llegada.
-    {settings && ` Puedes hacerlo desde ${settings.minutos_antes} minutos antes hasta ${settings.minutos_despues} minutos después del inicio, antes de que termine tu reservación.`}
+    Confirma con el código QR
+    {settings && `, ${settings.minutos_antes} minutos antes hasta ${settings.minutos_despues} minutos después de tu reservación.`}
   </p>
 }
 
